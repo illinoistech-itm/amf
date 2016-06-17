@@ -1,0 +1,13 @@
+Tests/Goals:
+
+1. Get device location:
+• Test running
+• Android Sample Code adapted. 
+• The second activity shows the location, which means the information is passed between two different activities. The second one
+can be substituted to send the location to the server in the future.
+2. Show device location on maps:
+• pending
+3. Send device location to server:
+• pending
+4. Show Drone location on map
+• pending
