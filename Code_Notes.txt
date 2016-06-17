@@ -1,0 +1,12 @@
+Using this file to add comments about the code.
+
+Steps/problem I went through (Kae):
+1. To use the location api, it's required to ask the user's permission to use the location info:
+  • add uses-permission on manifest.xml
+  • to previous APIs (below 20 if I'm not wrong), it's required to request permission at run time - see the code for 
+    "checkLocationPermissions"
+2. Compability among APIs:
+  • <uses-sdk android:minSdkVersion="15" android:targetSdkVersion="23" /> - adds compability
+  • @TargetApi(Build.VERSION_CODES.M) - supresses complains about features of APIs that are newer than minSdkVersion
+3. Using the location api (via google APIs):
+  • compile 'com.google.android.gms:play-services:9.0.2' -  added on the app gradle file within dependencies
