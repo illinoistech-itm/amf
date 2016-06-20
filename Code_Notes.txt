@@ -10,3 +10,5 @@ Steps/problem I went through (Kae):
   • @TargetApi(Build.VERSION_CODES.M) - supresses complains about features of APIs that are newer than minSdkVersion
 3. Using the location api (via google APIs):
   • compile 'com.google.android.gms:play-services:9.0.2' -  added on the app gradle file within dependencies
+4. Tests on previous API:
+  • the current app is not running on 4.1 
