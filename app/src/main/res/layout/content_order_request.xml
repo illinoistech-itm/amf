@@ -36,13 +36,16 @@
             android:id="@+id/txt_error"
             />
 
-        <com.google.android.gms.maps.MapView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+            android:layout_height="473dp"
+            tools:context=".OrderRequestActivity"
+            android:id="@+id/map_showLocation"
             android:layout_marginTop="10dp"
             android:layout_below="@+id/txt_longitude"
-            >
-        </com.google.android.gms.maps.MapView>
+            android:name="com.google.android.gms.maps.SupportMapFragment" />
+
+
 
 
     </RelativeLayout>

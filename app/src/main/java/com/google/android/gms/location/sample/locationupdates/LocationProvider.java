@@ -23,6 +23,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -116,6 +117,7 @@ public class LocationProvider extends AppCompatActivity implements
 
     @Override
     public void onCreate(final Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.location_provider);
 
@@ -244,6 +246,7 @@ public class LocationProvider extends AppCompatActivity implements
             location.putString("latitude",String.valueOf(mCurrentLocation.getLatitude()));
             location.putString("longitude",String.valueOf(mCurrentLocation.getLongitude()));
             intent.putExtra("location", location);
+            stopLocationUpdates();
             startActivity(intent);
         }
     }
@@ -320,13 +323,13 @@ public class LocationProvider extends AppCompatActivity implements
     public void onResume() {
         super.onResume();
 
-        // Within {@code onPause()}, we pause location updates, but leave the
-        // connection to GoogleApiClient intact.  Here, we resume receiving
-        // location updates if the user has requested them.
-
-        if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
-            startLocationUpdates();
-        }
+//        // Within {@code onPause()}, we pause location updates, but leave the
+//        // connection to GoogleApiClient intact.  Here, we resume receiving
+//        // location updates if the user has requested them.
+//
+//        if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
+//            startLocationUpdates();
+//        }
     }
 
     @Override

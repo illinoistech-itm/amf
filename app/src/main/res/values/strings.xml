@@ -26,4 +26,5 @@
     <string name="title_activity_order_request">OrderRequestActivity</string>
 
     <string name="location_error">Location not found!</string>
+    <string name="title_activity_maps">Map</string>
 </resources>
