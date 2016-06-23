@@ -28,7 +28,6 @@
             android:layout_height="50dp"
             android:id="@+id/btn_request"
             android:text="@string/request_text"
-            android:onClick="getLocation"
             android:layout_gravity="bottom"
             android:layout_marginBottom="20dp"
             />
