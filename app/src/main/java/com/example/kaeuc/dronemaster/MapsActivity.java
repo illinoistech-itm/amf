@@ -24,7 +24,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleMap.OnMyLocationButtonClickListener,ActivityCompat.OnRequestPermissionsResultCallback,
@@ -51,6 +53,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     * Stores the current device location
     */
     private Location mCurrentLocation;
+
+    private LatLng centerLocation;
 
     /**
      * STATIC VARIABLES
@@ -119,16 +123,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @SuppressWarnings("MissingPermission")
     private void setMapInCurrentLocation(Location location) {
+        LatLng currentPosition = new LatLng(location.getLatitude(),location.getLongitude());
         if (locationIsNull()){
             //Move camera
             CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(location.getLatitude(),location.getLongitude()),15);
+                    currentPosition,15);
             mMap.moveCamera(cameraUpdate);
 
         }else{
             //move camera to current position
+
             CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(location.getLatitude(),location.getLongitude()),15);
+                    currentPosition,15);
+
             mMap.moveCamera(cameraUpdate);
         }
     }
@@ -251,6 +258,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap = googleMap;
         mMap.setOnMyLocationButtonClickListener(this);
         enableMyLocation();
+        mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+            @Override
+            public void onCameraChange(CameraPosition cameraPosition) {
+                centerLocation = mMap.getCameraPosition().target;
+                String latitude = String.format("Latitude: %.5f",centerLocation.latitude);
+                String longitude = String.format("Longitude: %.5f",centerLocation.longitude);
+                txtCoordinates.setText(latitude+","+longitude);
+                mMap.clear();
+            }
+        });
 
     }
 
