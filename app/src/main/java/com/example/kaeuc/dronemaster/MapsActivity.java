@@ -1,9 +1,14 @@
 package com.example.kaeuc.dronemaster;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.DialogFragment;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -13,7 +18,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -26,18 +30,23 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleMap.OnMyLocationButtonClickListener,ActivityCompat.OnRequestPermissionsResultCallback,
-        com.google.android.gms.location.LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
+        com.google.android.gms.location.LocationListener, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, LocationDialog.ConfirmDialogListener{
+
+
+    private static final String TAG = "MapsActivity";
+
+    private AddressResultReceiver mResultReceiver;
 
     /*
     * UI Widgets
     */
     private GoogleMap mMap;
     private Button btnRequest;
-    private TextView txtCoordinates;
+    private TextView txtAddress;
 
     /**
      * Provides the entry point to Google Play services.
@@ -63,6 +72,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     private static final String [] PERMISSIONS_REQUIRED = {Manifest.permission.ACCESS_FINE_LOCATION};
+    private String mAddressOutput;
 
     /*
     *   ACTIVITY METHODS START
@@ -78,16 +88,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        mResultReceiver = new AddressResultReceiver(new Handler());
+
+
         //Find UI Widgets
         btnRequest = (Button) findViewById(R.id.btn_request);
-        txtCoordinates = (TextView) findViewById(R.id.txt_coordinates);
+        txtAddress = (TextView) findViewById(R.id.txt_address);
 
         buildGoogleApiClient();
+
+
 
         btnRequest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 stopLocationUpdates();
+                confirmLocation();
+
             }
         });
 
@@ -145,6 +162,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
+    private void confirmLocation(){
+        centerLocation = mMap.getCameraPosition().target;
+
+        LocationDialog dialog = new LocationDialog();
+        Bundle address = new Bundle();
+        address.putString("address",mAddressOutput);
+        dialog.setArguments(address);
+        dialog.show(getFragmentManager(),"LocationDialogFragment");
+    }
+
+
+
     private void enableMyLocation() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -173,40 +202,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @SuppressWarnings("MissingPermission")
-    protected void getLocation(){
-
-        if (locationIsNull()) {
-            mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-            final String latitude = String.valueOf(mCurrentLocation.getLatitude());
-            final String longitude = String.valueOf(mCurrentLocation.getLongitude());
-//            Toast.makeText(this, latitude+","+longitude, Toast.LENGTH_LONG).show();
-            txtCoordinates.setText(latitude+","+longitude);
-            btnRequest.setEnabled(false);
-
-        }else{
-            final String latitude = String.valueOf(mCurrentLocation.getLatitude());
-            final String longitude = String.valueOf(mCurrentLocation.getLongitude());
-            txtCoordinates.setText(latitude+","+longitude);
-
-        }
-    }
-
-    @SuppressWarnings("MissingPermission")
     protected void startLocationUpdates() {
 
         // The final argument to {@code requestLocationUpdates()} is a LocationListener
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,mLocationRequest,this);
-        Toast.makeText(this, "Start Location Updates", Toast.LENGTH_LONG).show();
+//        Toast.makeText(this, "Start Location Updates", Toast.LENGTH_LONG).show();
     }
 
 
     protected void stopLocationUpdates(){
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,this);
-        Toast.makeText(this, "Location Updates Stopped", Toast.LENGTH_SHORT).show();
-        final String latitude = String.valueOf(mCurrentLocation.getLatitude());
-        final String longitude = String.valueOf(mCurrentLocation.getLongitude());
-        txtCoordinates.setText(latitude+","+longitude);
+//        Toast.makeText(this, "Location Updates Stopped", Toast.LENGTH_SHORT).show();
+
     }
     /**
      * Sets up the location request. Android has two location request settings:
@@ -233,6 +241,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mLocationRequest.setFastestInterval(10000/2);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
+
+    protected void startIntentService(double lat, double lon) {
+        Intent intent = new Intent(this, FetchAddressIntentService.class);
+        intent.putExtra(Constants.RECEIVER, mResultReceiver);
+        Bundle location = new Bundle();
+        location.putDouble("latitude",lat);
+        location.putDouble("longitude",lon);
+        intent.putExtra("location",location);
+        startService(intent);
+    }
+
+
 
 
     /**
@@ -262,9 +282,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onCameraChange(CameraPosition cameraPosition) {
                 centerLocation = mMap.getCameraPosition().target;
-                String latitude = String.format("Latitude: %.5f",centerLocation.latitude);
-                String longitude = String.format("Longitude: %.5f",centerLocation.longitude);
-                txtCoordinates.setText(latitude+","+longitude);
+                startIntentService(centerLocation.latitude,centerLocation.longitude);
                 mMap.clear();
             }
         });
@@ -297,7 +315,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
-        Toast.makeText(this, "Location Changed", Toast.LENGTH_SHORT).show();
+
     }
 
     /**
@@ -307,13 +325,34 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     /*TODO*/
 
+    @SuppressLint("ParcelCreator")
+    class AddressResultReceiver extends ResultReceiver {
+        public AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
 
-    @Override
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+            // Display the address string
+            // or an error message sent from the intent service.
+            mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
+            txtAddress.setText(mAddressOutput);
+
+            // Show a toast message if an address was found.
+            if (resultCode == Constants.SUCCESS_RESULT) {
+                txtAddress.setText(mAddressOutput);
+            }
+
+        }
+    }
+
+        @Override
     public void onConnected(@Nullable Bundle bundle) {
         //noinspection MissingPermission
         mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-
         setMapInCurrentLocation(mCurrentLocation);
+
         startLocationUpdates();
     }
 
@@ -326,4 +365,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+
+
+    }
+
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+    }
 }
+

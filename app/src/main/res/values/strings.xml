@@ -2,4 +2,9 @@
     <string name="app_name">DroneMaster</string>
     <string name="title_activity_maps">Map</string>
     <string name="request_text">Request Order Now</string>
+    <string name="service_not_available">It was not possible to initiate geocoder</string>
+    <string name="invalid_lat_long_used">invalid latitude</string>
+    <string name="no_address_found">No address was found</string>
+    <string name="address_found">Address Located</string>
+    <string name="no_location_data_provided">No location was provided</string>
 </resources>

@@ -18,23 +18,24 @@
         android:layout_height="50dp"
         android:layout_gravity="center"
         android:src="@drawable/marker2"
-        />
+           />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_gravity="bottom"
-        android:background="@color/background"
+        android:background="@drawable/panel"
         >
-
-
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:id="@+id/txt_coordinates"
-            android:textColor="#FFFFFF"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txt_address"
+            android:layout_gravity="center|center_vertical"
+
+            android:textAppearance="@style/TextAppearance.AppCompat"
             />
+
 
         <Button
             android:layout_width="match_parent"
@@ -42,11 +43,13 @@
             android:id="@+id/btn_request"
             android:text="@string/request_text"
             android:layout_gravity="bottom"
-            android:layout_marginBottom="10dp"
+            android:layout_marginTop="5dp"
             />
 
 
     </LinearLayout>
+
+
 
 </FrameLayout>
 
