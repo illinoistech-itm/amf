@@ -4,7 +4,6 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.text.TextUtils;
@@ -14,8 +13,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Created by kaeuc on 6/27/2016.
@@ -60,9 +57,9 @@ public class FetchAddressIntentService extends IntentService {
         }
 
         // Get the location passed to this service through an extra.
-        final Bundle location = intent.getBundleExtra("location");
-        double latitude = location.getDouble("latitude");
-        double longitude = location.getDouble("longitude");
+        final Bundle location = intent.getBundleExtra(getString(R.string.location_bundle));
+        double latitude = location.getDouble(getString(R.string.location_latitude));
+        double longitude = location.getDouble(getString(R.string.location_longitude));
         // Make sure that the location data was really sent over through an extra. If it wasn't,
         // send an error error message and return.
         if (location == null) {
