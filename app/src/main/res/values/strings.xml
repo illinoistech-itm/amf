@@ -10,4 +10,8 @@
     <string name="location_latitude">latitude</string>
     <string name="location_longitude">longitude</string>
     <string name="location_bundle">location</string>
+    <string name="wifi_connection">Wi-fi connection succeed</string>
+    <string name="mobile_connection">Mobile connection succeed</string>
+    <string name="no_wifi_or_mobile">no connection was found</string>
+    <string name="server_url">http://104.194.114.42:8080/request</string>
 </resources>

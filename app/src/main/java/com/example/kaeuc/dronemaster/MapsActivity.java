@@ -3,9 +3,13 @@ package com.example.kaeuc.dronemaster;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
@@ -18,6 +22,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -31,6 +36,19 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleMap.OnMyLocationButtonClickListener,ActivityCompat.OnRequestPermissionsResultCallback,
         com.google.android.gms.location.LocationListener, GoogleApiClient.ConnectionCallbacks,
@@ -38,6 +56,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     /*TAG used for logs*/
     private static final String TAG = "MapsActivity";
+
+    // Whether there is a Wi-Fi connection.
+    private static boolean wifiConnected = false;
+    // Whether there is a mobile connection.
+    private static boolean mobileConnected = false;
 
     /*Inner class responsible to receive the results of the geofence intent*/
     private AddressResultReceiver mResultReceiver;
@@ -95,23 +118,33 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        //Initiate the receiver
-        mResultReceiver = new AddressResultReceiver(new Handler());
-
-
         //Find UI Widgets
         btnRequest = (Button) findViewById(R.id.btn_request);
         txtAddress = (TextView) findViewById(R.id.txt_address);
 
+
+        //Initiate the receiver
+        mResultReceiver = new AddressResultReceiver(new Handler());
+
+        if(checkNetworkConnection()){ // Internet connection successful
+
+            // Sets the action when the button is clicked
+            btnRequest.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    confirmLocation();
+                }
+            });
+        }else{
+            // Handle no connection cases
+            Toast.makeText(this, "No connection", Toast.LENGTH_SHORT).show();
+        }
+
+
         buildGoogleApiClient();
 
-        //sets the action when the button is clicked
-        btnRequest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                confirmLocation();
-            }
-        });
+
+
     }
 
 
@@ -243,6 +276,30 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /**
+     * Check whether the device is connected, and if so, whether the connection
+     * is wifi or mobile (it could be something else).
+     */
+    private boolean checkNetworkConnection() {
+        ConnectivityManager connMgr =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeInfo = connMgr.getActiveNetworkInfo();
+        if (activeInfo != null && activeInfo.isConnected()) {
+            wifiConnected = activeInfo.getType() == ConnectivityManager.TYPE_WIFI;
+            mobileConnected = activeInfo.getType() == ConnectivityManager.TYPE_MOBILE;
+            if(wifiConnected) {
+                Log.i(TAG, getString(R.string.wifi_connection));
+            } else if (mobileConnected){
+                Log.i(TAG, getString(R.string.mobile_connection));
+            }
+        } else {
+            Log.i(TAG, getString(R.string.no_wifi_or_mobile));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * CUSTOM METHODS END
      */
 
@@ -310,8 +367,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
 
 
-
-
     @SuppressLint("ParcelCreator")
     class AddressResultReceiver extends ResultReceiver {
         public AddressResultReceiver(Handler handler) {
@@ -332,6 +387,94 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /*TODO*/
+
+    public void sendLocation(double lat, double lon){
+        JSONObject locationObj = new JSONObject();
+        try{
+            locationObj.put(getString(R.string.location_latitude),lat);
+            locationObj.put(getString(R.string.location_longitude),lon);
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+
+        if (locationObj.length() > 0){
+            new SendDataToServer().execute(String.valueOf(locationObj));
+        }
+    }
+
+
+    class SendDataToServer extends AsyncTask<String,String,String>{
+
+        @Override
+        protected String doInBackground(String... params) {
+            String jsonResponse = null;
+            String jsonData = params[0];
+            HttpURLConnection connection = null;
+            BufferedReader reader = null;
+            try{
+
+                URL url = new URL(getString(R.string.server_url));
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setReadTimeout( 10000 /*milliseconds*/ );
+                connection.setConnectTimeout( 15000 /* milliseconds */ );
+                connection.setDoOutput(true);
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setRequestProperty("Accept", "application/json");
+                connection.connect();
+
+
+                Writer writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
+                writer.write(jsonData);
+
+                writer.close();
+
+                InputStream inputStream = connection.getInputStream();
+
+                StringBuffer buffer = new StringBuffer();
+
+                if(inputStream == null){
+                    return null;
+                }
+
+                reader =  new BufferedReader(new InputStreamReader(inputStream));
+
+
+                String inputLine;
+                while ((inputLine = reader.readLine()) != null)
+                    buffer.append(inputLine + "\n");
+                if (buffer.length() == 0) {
+                    // Stream was empty. No point in parsing.
+                    return null;
+                }
+                jsonResponse = buffer.toString();
+                Log.i(TAG,jsonResponse);
+                return jsonResponse;
+
+            }catch (IOException e){
+                e.printStackTrace();
+            }finally {
+                if(connection != null){
+                    connection.disconnect();
+                }
+
+                if(reader != null){
+                    try{
+                        reader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+        }
+    }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
@@ -354,6 +497,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         stopLocationUpdates();
+        sendLocation(centerLocation.latitude,centerLocation.longitude);
+
     }
 
     @Override
