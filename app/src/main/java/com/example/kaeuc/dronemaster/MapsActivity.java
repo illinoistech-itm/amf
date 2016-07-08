@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationProvider;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -62,6 +63,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // Whether there is a mobile connection.
     private static boolean mobileConnected = false;
 
+    private static boolean locationPermissionGranted = false;
+
     /*Inner class responsible to receive the results of the geofence intent*/
     private AddressResultReceiver mResultReceiver;
 
@@ -102,6 +105,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     private static final String [] PERMISSIONS_REQUIRED = {Manifest.permission.ACCESS_FINE_LOCATION};
+
 
 
     /*
@@ -174,13 +178,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
 
     /*Sets the map on the current location*/
-    @SuppressWarnings("MissingPermission")
     private void setMapInCurrentLocation(Location location) {
-        LatLng currentPosition = new LatLng(location.getLatitude(),location.getLongitude());
+        if(locationPermissionGranted){
+            LatLng currentPosition = new LatLng(location.getLatitude(),location.getLongitude());
             //moves map camera to current position
             CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(
                     currentPosition,15);
             mMap.moveCamera(cameraUpdate);
+        }else{
+            LatLng defaultPosition = new LatLng(41.881832,-87.623177);
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(
+                    defaultPosition,15);
+            mMap.moveCamera(cameraUpdate);
+        }
+
     }
 
 
@@ -189,9 +200,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 != PackageManager.PERMISSION_GRANTED) {
             // Permission to access the location is missing.
             ActivityCompat.requestPermissions(this, PERMISSIONS_REQUIRED, LOCATION_PERMISSION_REQUEST_CODE);
+            setMapInCurrentLocation(mCurrentLocation);
         } else if (mMap != null) {
             // Access to the location has been granted to the app.
             mMap.setMyLocationEnabled(true);
+            locationPermissionGranted = true;
         }
     }
 
@@ -218,7 +231,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void startLocationUpdates() {
         // The final argument to {@code requestLocationUpdates()} is a LocationListener
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,mLocationRequest,this);
+        if(locationPermissionGranted)
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,mLocationRequest,this);
 //        Toast.makeText(this, "Start Location Updates", Toast.LENGTH_LONG).show();
     }
 
@@ -344,8 +358,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             // Enable the my location layer if the permission has been granted.
             checkLocationPermissions();
+            locationPermissionGranted = true;
         }else{
-            //Disable what uses the permission
+
         }
     }
 
@@ -359,7 +374,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
-
     }
 
     /**
