@@ -52,7 +52,7 @@ public class FetchAddressIntentService extends IntentService {
 
         // Check if receiver was properly registered.
         if (mReceiver == null) {
-            Log.wtf(TAG, "No receiver received. There is nowhere to send the results.");
+//            Log.wtf(TAG, "No receiver received. There is nowhere to send the results.");
             return;
         }
 
@@ -64,7 +64,7 @@ public class FetchAddressIntentService extends IntentService {
         // send an error error message and return.
         if (location == null) {
             errorMessage = getString(R.string.no_location_data_provided);
-            Log.wtf(TAG, errorMessage);
+//            Log.wtf(TAG, errorMessage);
             deliverResultToReceiver(Constants.FAILURE_RESULT, errorMessage);
             return;
         }
@@ -88,8 +88,8 @@ public class FetchAddressIntentService extends IntentService {
             // Using getFromLocation() returns an array of Addresses for the area immediately
             // surrounding the given latitude and longitude. The results are a best guess and are
             // not guaranteed to be accurate.
-            Log.wtf(TAG,String.valueOf(latitude));
-            Log.wtf(TAG,String.valueOf(longitude));
+//            Log.wtf(TAG,String.valueOf(latitude));
+//            Log.wtf(TAG,String.valueOf(longitude));
 
             addresses = geocoder.getFromLocation(
                     latitude,
@@ -112,7 +112,7 @@ public class FetchAddressIntentService extends IntentService {
         if (addresses == null || addresses.size()  == 0) {
             if (errorMessage.isEmpty()) {
                 errorMessage = getString(R.string.no_address_found);
-                Log.e(TAG, errorMessage);
+//                Log.e(TAG, errorMessage);
             }
             deliverResultToReceiver(Constants.FAILURE_RESULT, errorMessage);
         } else {
@@ -131,7 +131,7 @@ public class FetchAddressIntentService extends IntentService {
             for(int i = 0; i < address.getMaxAddressLineIndex(); i++) {
                 addressFragments.add(address.getAddressLine(i));
             }
-            Log.i(TAG, getString(R.string.address_found));
+//            Log.i(TAG, getString(R.string.address_found));
             deliverResultToReceiver(Constants.SUCCESS_RESULT,
                     TextUtils.join(System.getProperty("line.separator"), addressFragments));
         }

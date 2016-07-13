@@ -4,10 +4,11 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationProvider;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -18,6 +19,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -34,8 +36,11 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,11 +54,18 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Scanner;
+import java.util.concurrent.ExecutionException;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
-        GoogleMap.OnMyLocationButtonClickListener,ActivityCompat.OnRequestPermissionsResultCallback,
-        com.google.android.gms.location.LocationListener, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, LocationDialog.ConfirmDialogListener{
+        GoogleMap.OnMyLocationButtonClickListener,
+        ActivityCompat.OnRequestPermissionsResultCallback,
+        com.google.android.gms.location.LocationListener,
+        /*These interfaces are used to monitor the state of Google API Client*/
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        /*Interface used to create a dialog window and get the results*/
+        LocationDialog.ConfirmDialogListener,SendDataToServer.AsyncResponse {
 
     /*TAG used for logs*/
     private static final String TAG = "MapsActivity";
@@ -64,6 +76,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static boolean mobileConnected = false;
 
     private static boolean locationPermissionGranted = false;
+
+    private static boolean gpsOn = false;
 
     /*Inner class responsible to receive the results of the geofence intent*/
     private AddressResultReceiver mResultReceiver;
@@ -105,12 +119,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     private static final String [] PERMISSIONS_REQUIRED = {Manifest.permission.ACCESS_FINE_LOCATION};
+    private boolean moveCameraToUser;
+    private boolean resumed = false;
 
 
 
     /*
     *   ACTIVITY METHODS START
     */
+
 
 
     @Override
@@ -122,15 +139,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        //Find UI Widgets
+
+        //  Find UI Widgets
         btnRequest = (Button) findViewById(R.id.btn_request);
         txtAddress = (TextView) findViewById(R.id.txt_address);
 
 
-        //Initiate the receiver
+        //  Initiate the receiver (which is gonna receive the address)
         mResultReceiver = new AddressResultReceiver(new Handler());
 
-        if(checkNetworkConnection()){ // Internet connection successful
+        //  Used in case the app was running before or change the orientation
+        if(savedInstanceState != null){
+            centerLocation = savedInstanceState.getParcelable("centerLocation");
+            mCurrentLocation = savedInstanceState.getParcelable("currentLocation");
+            moveCameraToUser = true;
+        }
+        //  TODO
+        //  Separate this
+        // Internet and GPS connection on
+        if(checkNetworkConnection() && checkGpsConnection()){
 
             // Sets the action when the button is clicked
             btnRequest.setOnClickListener(new View.OnClickListener() {
@@ -140,33 +167,31 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
         }else{
+            // TODO
             // Handle no connection cases
-            Toast.makeText(this, "No connection", Toast.LENGTH_SHORT).show();
+            if(!checkNetworkConnection())
+                Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(this, "No GPS connection", Toast.LENGTH_SHORT).show();
         }
-
-
         buildGoogleApiClient();
 
-
-
     }
-
 
     @Override
     protected void onStart() {
         mGoogleApiClient.connect();
         super.onStart();
-
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        resumed = true;
         if( mGoogleApiClient != null && mGoogleApiClient.isConnected() ) {
             mGoogleApiClient.disconnect();
         }
     }
-
 
     /*
     *   ACTIVITY METHODS END
@@ -178,21 +203,47 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
 
     /*Sets the map on the current location*/
-    private void setMapInCurrentLocation(Location location) {
-        if(locationPermissionGranted){
-            LatLng currentPosition = new LatLng(location.getLatitude(),location.getLongitude());
-            //moves map camera to current position
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(
-                    currentPosition,15);
-            mMap.moveCamera(cameraUpdate);
-        }else{
-            LatLng defaultPosition = new LatLng(41.881832,-87.623177);
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(
-                    defaultPosition,15);
-            mMap.moveCamera(cameraUpdate);
-        }
+    private void initMapCamera(Location location) {
+        if(!moveCameraToUser) {
+            if (locationPermissionGranted) {
+                CameraPosition cameraPosition = CameraPosition.builder().target(
+                        new LatLng(location.getLatitude(), location.getLongitude()))
+                        .zoom(16f)
+                        .bearing(0.0f)
+                        .tilt(0.0f)
+                        .build();
 
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                enableMyLocation();
+            } else {
+                CameraPosition cameraPosition = CameraPosition.builder().target(
+                        new LatLng(41.881832, -87.623177))
+                        .zoom(16f)
+                        .bearing(0.0f)
+                        .tilt(0.0f)
+                        .build();
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            }
+        }
     }
+
+    private void initMapCamera(LatLng location) {
+        if(!moveCameraToUser) {
+            if (locationPermissionGranted) {
+                CameraPosition cameraPosition = CameraPosition.builder().target(
+                        new LatLng(location.latitude, location.longitude))
+                        .zoom(16f)
+                        .bearing(0.0f)
+                        .tilt(0.0f)
+                        .build();
+
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                enableMyLocation();
+            }
+        }
+    }
+
+
 
 
     private void checkLocationPermissions() {
@@ -200,10 +251,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 != PackageManager.PERMISSION_GRANTED) {
             // Permission to access the location is missing.
             ActivityCompat.requestPermissions(this, PERMISSIONS_REQUIRED, LOCATION_PERMISSION_REQUEST_CODE);
-            setMapInCurrentLocation(mCurrentLocation);
         } else if (mMap != null) {
-            // Access to the location has been granted to the app.
-            mMap.setMyLocationEnabled(true);
+            // Access to the location has been granted before and the map is initialized.
             locationPermissionGranted = true;
         }
     }
@@ -214,7 +263,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     protected synchronized void buildGoogleApiClient() {
         Log.i("location-updates-sample", "Building GoogleApiClient");
-
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -224,8 +272,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @SuppressWarnings("MissingPermission")
-    /*Starts the location updates, moves the current position marker,
-    no need to check permission here as soon as they were checked at the initialization
+    /*
+    *   Starts the location updates, moves the current position marker,
+    *   no need to check permission here as soon as they were checked at the initialization
     */
 
     protected void startLocationUpdates() {
@@ -233,14 +282,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
         if(locationPermissionGranted)
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,mLocationRequest,this);
-//        Toast.makeText(this, "Start Location Updates", Toast.LENGTH_LONG).show();
     }
 
-    /*Stops the location update, use when there is no need of the gps*/
+    /*
+     *  Stops the location update, use when there is no need of the gps
+     */
     protected void stopLocationUpdates(){
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,this);
-//        Toast.makeText(this, "Location Updates Stopped", Toast.LENGTH_SHORT).show();
-
     }
 
     /**
@@ -269,14 +317,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
-    /*Shows the confirmation dialog to confirm the address */
+    /**
+     * Shows a confirmation dialog to confirm the address
+     */
     private void confirmLocation(){
-        centerLocation = mMap.getCameraPosition().target;
         LocationDialog dialog = new LocationDialog();
         dialog.show(getFragmentManager(),"LocationDialogFragment");
     }
 
-    /*Starts the geofence intent to retrieve the address from the coordinates given*/
+    /**
+     * Starts the geofence intent to retrieve the address from the coordinates given
+     */
     protected void startIntentService(double lat, double lon) {
         // Creates the new intent to run in the background
         Intent intent = new Intent(this, FetchAddressIntentService.class);
@@ -306,11 +357,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.i(TAG, getString(R.string.mobile_connection));
             }
         } else {
-            Log.i(TAG, getString(R.string.no_wifi_or_mobile));
+            Log.e(TAG, getString(R.string.no_wifi_or_mobile));
             return false;
         }
-
         return true;
+    }
+
+
+    private boolean checkGpsConnection(){
+        LocationManager locationManager =
+                (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
     /**
@@ -325,8 +382,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
+     * This is where we can add markers or lines, add listeners or move the camera.
      * If Google Play services is not installed on the device, the user will be prompted to install
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
@@ -335,19 +391,40 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setOnMyLocationButtonClickListener(this);
-        checkLocationPermissions();
+        //  Runs when the app is partially visible or the orientation changes
+        if(moveCameraToUser){
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(centerLocation));
+        }
         mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
             @Override
             public void onCameraChange(CameraPosition cameraPosition) {
+                mMap.clear();
                 centerLocation = mMap.getCameraPosition().target;
                 startIntentService(centerLocation.latitude,centerLocation.longitude);
-                mMap.clear();
             }
         });
-
+        enableMyLocation();
     }
 
 
+    /**
+     *  Sets the My Location button on the map
+     */
+
+    private void enableMyLocation() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Permission to access the location is missing.
+            ActivityCompat.requestPermissions(this, PERMISSIONS_REQUIRED, LOCATION_PERMISSION_REQUEST_CODE);
+        } else if (mMap != null) {
+            // Access to the location has been granted to the app.
+            mMap.setMyLocationEnabled(true);
+        }
+    }
+
+    /**
+     *  Callback called after the permission request dialog
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
@@ -357,10 +434,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (grantResults.length > 0
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             // Enable the my location layer if the permission has been granted.
-            checkLocationPermissions();
             locationPermissionGranted = true;
+            onConnected(new Bundle());
         }else{
-
+            Toast.makeText(this, "You need to grant location permissions", Toast.LENGTH_LONG).show();
+            this.finish();
         }
     }
 
@@ -375,6 +453,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
     }
+
+    @Override
+    public void onTaskCompleted(String output) {
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.setTitle("Confirmation");
+        alertDialog.setMessage(output);
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.show();
+    }
+
 
     /**
      * INTERFACES METHODS END
@@ -402,100 +495,45 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     /*TODO*/
 
-    public void sendLocation(double lat, double lon){
+    public void sendLocation(double lat, double lon,String address){
         JSONObject locationObj = new JSONObject();
         try{
             locationObj.put(getString(R.string.location_latitude),lat);
             locationObj.put(getString(R.string.location_longitude),lon);
+            locationObj.put("address",address);
         }catch (JSONException e){
             e.printStackTrace();
         }
 
         if (locationObj.length() > 0){
-            new SendDataToServer().execute(String.valueOf(locationObj));
+            new SendDataToServer(this).execute(String.valueOf(locationObj));
         }
     }
 
 
-    class SendDataToServer extends AsyncTask<String,String,String>{
-
-        @Override
-        protected String doInBackground(String... params) {
-            String jsonResponse = null;
-            String jsonData = params[0];
-            HttpURLConnection connection = null;
-            BufferedReader reader = null;
-            try{
-
-                URL url = new URL(getString(R.string.server_url));
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setReadTimeout( 10000 /*milliseconds*/ );
-                connection.setConnectTimeout( 15000 /* milliseconds */ );
-                connection.setDoOutput(true);
-                connection.setRequestProperty("Content-Type", "application/json");
-                connection.setRequestProperty("Accept", "application/json");
-                connection.connect();
 
 
-                Writer writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
-                writer.write(jsonData);
 
-                writer.close();
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
 
-                InputStream inputStream = connection.getInputStream();
+        outState.putParcelable("centerLocation",centerLocation);
+        outState.putParcelable("currentLocation",mCurrentLocation);
+        super.onSaveInstanceState(outState);
 
-                StringBuffer buffer = new StringBuffer();
-
-                if(inputStream == null){
-                    return null;
-                }
-
-                reader =  new BufferedReader(new InputStreamReader(inputStream));
-
-
-                String inputLine;
-                while ((inputLine = reader.readLine()) != null)
-                    buffer.append(inputLine + "\n");
-                if (buffer.length() == 0) {
-                    // Stream was empty. No point in parsing.
-                    return null;
-                }
-                jsonResponse = buffer.toString();
-                Log.i(TAG,jsonResponse);
-                return jsonResponse;
-
-            }catch (IOException e){
-                e.printStackTrace();
-            }finally {
-                if(connection != null){
-                    connection.disconnect();
-                }
-
-                if(reader != null){
-                    try{
-                        reader.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-        }
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         //noinspection MissingPermission
-        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        setMapInCurrentLocation(mCurrentLocation);
         startLocationUpdates();
+        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        checkLocationPermissions();
+        if(resumed){
+            initMapCamera(centerLocation);
+        }else{
+            initMapCamera(mCurrentLocation);
+        }
     }
 
     @Override
@@ -509,14 +547,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onDialogPositiveClick(DialogFragment dialog) {
-        stopLocationUpdates();
-        sendLocation(centerLocation.latitude,centerLocation.longitude);
+    protected void onResume() {
+        super.onResume();
+    }
 
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+//        stopLocationUpdates();
+        sendLocation(centerLocation.latitude,centerLocation.longitude,mAddressOutput);
     }
 
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
     }
 }
-

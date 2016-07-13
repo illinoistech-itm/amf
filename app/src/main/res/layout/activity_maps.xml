@@ -14,10 +14,11 @@
         tools:context="com.example.kaeuc.dronemaster.MapsActivity" />
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="20dp"
         android:layout_gravity="center"
-        android:src="@drawable/marker2"
+        android:src="@drawable/map_marker"
            />
 
     <LinearLayout
@@ -32,7 +33,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/txt_address"
             android:layout_gravity="center|center_vertical"
-
             android:textAppearance="@style/TextAppearance.AppCompat"
             />
 
