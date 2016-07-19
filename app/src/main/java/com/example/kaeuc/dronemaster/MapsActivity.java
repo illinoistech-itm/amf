@@ -11,7 +11,6 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
@@ -31,31 +30,19 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Scanner;
-import java.util.concurrent.ExecutionException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.UUID;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleMap.OnMyLocationButtonClickListener,
@@ -111,6 +98,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     /* Coordinates of the screen center*/
     private LatLng centerLocation;
 
+    /* Unique instance ID. Maybe can change for a user ID in the future */
+    private String uniqueID = UUID.randomUUID().toString();
+    
+    
     /**
      * STATIC VARIABLES
      */
@@ -120,7 +111,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private static final String [] PERMISSIONS_REQUIRED = {Manifest.permission.ACCESS_FINE_LOCATION};
     private boolean moveCameraToUser;
-    private boolean resumed = false;
+    private boolean resumed;
 
 
 
@@ -139,7 +130,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-
+        
+        
         //  Find UI Widgets
         btnRequest = (Button) findViewById(R.id.btn_request);
         txtAddress = (TextView) findViewById(R.id.txt_address);
@@ -154,11 +146,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mCurrentLocation = savedInstanceState.getParcelable("currentLocation");
             moveCameraToUser = true;
         }
-        //  TODO
-        //  Separate this
-        // Internet and GPS connection on
-        if(checkNetworkConnection() && checkGpsConnection()){
 
+        resumed = false;
+
+        //  Checks if the gps and network are on and working
+        if(checkNetworkConnection() && checkGpsConnection()){
             // Sets the action when the button is clicked
             btnRequest.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -166,21 +158,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     confirmLocation();
                 }
             });
-        }else{
+            buildGoogleApiClient();
+        }else if(!checkNetworkConnection()){
             // TODO
-            // Handle no connection cases
-            if(!checkNetworkConnection())
-                Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
-            else
+            // Change the layout for no internet connection
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+            setContentView(R.layout.no_connection);
+        }else if(!checkGpsConnection()){
+            //  TODO
+            // Turn on gps dialog
                 Toast.makeText(this, "No GPS connection", Toast.LENGTH_SHORT).show();
         }
-        buildGoogleApiClient();
+
 
     }
 
     @Override
     protected void onStart() {
-        mGoogleApiClient.connect();
+        if( mGoogleApiClient != null) {
+            mGoogleApiClient.connect();
+        }
         super.onStart();
     }
 
@@ -188,9 +185,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onStop() {
         super.onStop();
         resumed = true;
+        stopLocationUpdates();
         if( mGoogleApiClient != null && mGoogleApiClient.isConnected() ) {
             mGoogleApiClient.disconnect();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     /*
@@ -310,10 +313,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // inexact. You may not receive updates at all if no location sources are available, or
         // you may receive them slower than requested. You may also receive updates faster than
         // requested if other applications are requesting location at a faster interval.
-        mLocationRequest.setInterval(10000);
+        mLocationRequest.setInterval(1000);
         // Sets the fastest rate for active location updates. This interval is exact, and your
         // application will never receive updates faster than this value.
-        mLocationRequest.setFastestInterval(10000/2);
+        mLocationRequest.setFastestInterval(1000/2);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
@@ -363,11 +366,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return true;
     }
 
-
     private boolean checkGpsConnection(){
         LocationManager locationManager =
                 (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
+
+    private String createRequestID()
+    {
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy_HH:mm:ss:ms");
+        String formattedDate = df.format(c.getTime());
+        return getString(R.string.request_prefix) + formattedDate ;
     }
 
     /**
@@ -493,14 +503,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    /*TODO*/
-
-    public void sendLocation(double lat, double lon,String address){
+    public void sendRequestInfo(double lat, double lon, String address, String instanceId, String reqId){
         JSONObject locationObj = new JSONObject();
         try{
+            locationObj.put(getString(R.string.instance_id),instanceId);
+            locationObj.put(getString(R.string.request_id),reqId);
             locationObj.put(getString(R.string.location_latitude),lat);
             locationObj.put(getString(R.string.location_longitude),lon);
-            locationObj.put("address",address);
+            locationObj.put(getString(R.string.address),address);
         }catch (JSONException e){
             e.printStackTrace();
         }
@@ -523,6 +533,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    @SuppressWarnings("MissingPermission")
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         //noinspection MissingPermission
@@ -547,17 +558,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        sendRequestInfo(centerLocation.latitude, centerLocation.longitude,
+                mAddressOutput,
+                createRequestID(),
+                uniqueID);
     }
 
-    @Override
-    public void onDialogPositiveClick(DialogFragment dialog) {
-//        stopLocationUpdates();
-        sendLocation(centerLocation.latitude,centerLocation.longitude,mAddressOutput);
-    }
+
 
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
     }
+
 }
