@@ -122,13 +122,8 @@ public class FetchAddressIntentService extends IntentService {
             // Fetch the address lines using {@code getAddressLine},
             // join them, and send them to the thread. The {@link android.location.address}
             // class provides other options for fetching address details that you may prefer
-            // to use. Here are some examples:
-            // getLocality() ("Mountain View", for example)
-            // getAdminArea() ("CA", for example)
-            // getPostalCode() ("94043", for example)
-            // getCountryCode() ("US", for example)
-            // getCountryName() ("United States", for example)
-            for(int i = 0; i < address.getMaxAddressLineIndex(); i++) {
+            // to use.
+            for(int i = 0; i < address.getMaxAddressLineIndex() -1; i++) {
                 addressFragments.add(address.getAddressLine(i));
             }
 //            Log.i(TAG, getString(R.string.address_found));

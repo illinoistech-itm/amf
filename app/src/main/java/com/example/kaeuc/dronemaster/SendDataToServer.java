@@ -1,6 +1,7 @@
 package com.example.kaeuc.dronemaster;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -44,11 +45,15 @@ public class SendDataToServer extends AsyncTask<String,String,String> {
             Scanner scan = new Scanner(result);
             final String response = scan.nextLine();
             if(response.contains("1")){
-                String receivedText = "";
+                String address = "";
                 while(scan.hasNext()){
-                    receivedText += scan.nextLine() + " ";
+                    address += scan.nextLine() + " ";
                 }
-                callBack.onTaskCompleted(receivedText);
+                final Resources res = mContext.getResources();
+                String successText = res.getString(R.string.request_succeed);
+                result = "";
+                result += successText + address;
+                callBack.onTaskCompleted(result);
             }else{
                 Log.i("OnPost","Failure");
             }
