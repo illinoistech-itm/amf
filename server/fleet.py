@@ -43,3 +43,9 @@ class Fleet():
 		drone_list[id].close()
 		drone_list[id] = None
 
+	def get_status(self,id):
+		"""
+		Gets status of drone with id.
+		Returns dictionary with fields: current, total, command, distance and altitude.
+		"""
+		return drone_list[id].get_status()

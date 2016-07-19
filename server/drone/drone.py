@@ -167,6 +167,16 @@ class Drone():
 
         print "## Mission ended"
 
+    def get_status(self):
+        current_command = self.cmds[self.cmds.next-1].command
+
+        return {"current" : self.cmds.next, 
+                "total" : self.cmds.count,
+                "command" : commands_dict[current_command],
+                "distance" : self.distance_to_current_waypoint(),
+                "altitude" : self.altitude
+                }
+
     def mission_ended(self):
         if self.cmds.next > 1:
             self.mission_ended_aux = True
