@@ -71,7 +71,10 @@ test = Drone(connection_string, waypoint_location.lat, waypoint_location.lon)
 # test.simple_goto(waypoint_location)
 # time.sleep(60)
 
+test.connect()
 test.run()
+test.wait()
+test.close()
 
 
 

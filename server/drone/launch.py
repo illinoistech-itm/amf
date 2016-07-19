@@ -29,3 +29,4 @@ if address == "sitl":
 d = drone.Drone(address, lat, lon)
 d.run()
 d.wait()
+d.close()

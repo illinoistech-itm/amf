@@ -25,7 +25,6 @@ class Drone():
         self.lon = longitude
         self.cruise_altitude = altitude
         self.address = address
-        self.connect()
         self.cmds = self.vehicle.commands
 
         self.mission_ended_aux = False
@@ -141,8 +140,8 @@ class Drone():
         self.takeoff()
         self.begin_mission()
         self.download_mission()
-        self.wait()
 
+    def close(self):
         print "Closing vehicle"
         self.vehicle.close()
 
@@ -168,9 +167,6 @@ class Drone():
 
         print "## Mission ended"
 
-    def distance_to_home(self):
-        return "todo"
-
     def mission_ended(self):
         if self.cmds.next > 1:
             self.mission_ended_aux = True
@@ -190,7 +186,7 @@ class Drone():
         print "##########################################"
 
     def get_location(self):
-        return [self.current_location.lat, self.current_location.lon]
+        return (self.current_location.lat, self.current_location.lon)
 
     def location_callback(self, vehicle, name, location):
         if location.global_relative_frame.alt is not None:
