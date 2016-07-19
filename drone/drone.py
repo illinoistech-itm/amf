@@ -150,6 +150,10 @@ class Drone():
         # while self.cmds.next != self.cmds.count:
         while not self.mission_ended():
             current_command = self.cmds[self.cmds.next-1].command
+
+            if current_command not in commands_dict:
+                print "!!! Command not in command dictionary! Command number: %s" % current_command
+
             print "%s / %s: " % (self.cmds.next, self.cmds.count),
             print "%s" % commands_dict[current_command],
 
