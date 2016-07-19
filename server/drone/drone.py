@@ -1,8 +1,9 @@
+from __future__ import print_function
 import dronekit
 from pymavlink import mavutil
 import time
 import frame_conversion
-from __future__ import print_function
+
 
 commands_dict = { mavutil.mavlink.MAV_CMD_NAV_TAKEOFF: "taking off",
                   mavutil.mavlink.MAV_CMD_NAV_WAYPOINT: "flying to waypoint",
@@ -33,9 +34,9 @@ class Drone():
         self.mission_ended_aux = False
     
     def connect(self):
-        print 'Connecting to vehicle on: %s' % self.address
+        print('Connecting to vehicle on: {}'.format(self.address))
         self.vehicle = dronekit.connect(self.address, wait_ready=True, baud=57600)#, heartbeat_timeout=10)
-        print 'Connection established'
+        print('Connection established')
 
         self.cmds = self.vehicle.commands
         self.vehicle.add_attribute_listener('location', self.location_callback)
@@ -74,7 +75,6 @@ class Drone():
         self.cmds.upload()
 
     def distance_to_current_waypoint(self):
-        # TODO: error safe it
         """
         Gets distance in metres to the current waypoint.
         It returns None for the first waypoint (Home location).
@@ -96,34 +96,34 @@ class Drone():
             return distancetopoint
 
     def arm(self):
-        print "Basic pre-arm checks"
+        print("Basic pre-arm checks")
         # Don't try to arm until autopilot is ready
         while not self.vehicle.is_armable:
-            print " Waiting for vehicle to initialise..."
+            print(" Waiting for vehicle to initialise...")
             time.sleep(1)
 
             
-        print "Arming motors"
+        print("Arming motors")
         # Copter should arm in GUIDED mode
         self.vehicle.mode = dronekit.VehicleMode("GUIDED")
         self.vehicle.armed = True    
 
         # Confirm vehicle armed before attempting to take off
         while not self.vehicle.armed:      
-            print " Waiting for arming..."
+            print(" Waiting for arming...")
             time.sleep(1)
 
     def takeoff(self):
-        print "Taking off!"
+        print("Taking off!")
         self.vehicle.simple_takeoff(self.cruise_altitude) # Take off to target altitude
 
         # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
         #  after Vehicle.simple_takeoff will execute immediately).
         while True:
-            print " Altitude: %.1f" % self.vehicle.location.global_relative_frame.alt 
+            print(" Altitude: {:.1f}".format(self.vehicle.location.global_relative_frame.alt ))
             #Break and return from function just below target altitude.        
             if self.vehicle.location.global_relative_frame.alt>=self.cruise_altitude*0.95: 
-                print "Reached target altitude"
+                print("Reached target altitude")
                 break
             time.sleep(1)
 
@@ -132,11 +132,11 @@ class Drone():
 
     def run(self):
         self.show_battery()
-        print "Clearing mission"
+        print("Clearing mission")
         self.clear_mission()
-        print "Preparing mission"
+        print("Preparing mission")
         self.prepare_mission()
-        print "Uploading mission"
+        print("Uploading mission")
         self.upload_mission()
         time.sleep(2)
         raw_input("Press enter to begin arming and taking off")
@@ -146,7 +146,7 @@ class Drone():
         self.download_mission()
 
     def close(self):
-        print "Closing vehicle"
+        print("Closing vehicle")
         self.vehicle.close()
 
     def wait(self):
@@ -155,21 +155,19 @@ class Drone():
             current_command = self.cmds[self.cmds.next-1].command
 
             if current_command not in commands_dict:
-                print "!!! Command not in command dictionary! Command number: %s" % current_command
+                print("!!! Command not in command dictionary! Command number: {}".format(current_command))
 
-            print "%s / %s: " % (self.cmds.next, self.cmds.count),
-            print "%s" % commands_dict[current_command],
+            print("{current} / {total}: {command} ".format(current=self.cmds.next,
+                    total=self.cmds.count, command=commands_dict[current_command]), end="")
 
-            if current_command == mavutil.mavlink.MAV_CMD_NAV_WAYPOINT:
-                print "@ distance %.1f" % self.distance_to_current_waypoint(),
-            elif current_command == mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH:
-                print "@ distance %.1f" % self.distance_to_current_waypoint(),
+            if current_command in [mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH]:
+                print("@ distance {:.1f} ".format(self.distance_to_current_waypoint()), end="")
 
-            print "@ altitude %.1f" % self.altitude
+            print("@ altitude {:.1f}".format(self.altitude))
 
             time.sleep(1)
 
-        print "## Mission ended"
+        print("## Mission ended")
 
     def get_status(self):
         current_command = self.cmds[self.cmds.next-1].command
@@ -192,12 +190,16 @@ class Drone():
             return False
 
     def show_battery(self):
-        print "##########################################"
-        print "# Battery information:"
-        print "# voltage: %s" % self.vehicle.battery.voltage
-        print "# current: %s" % self.vehicle.battery.current
-        print "# level: %s" % self.vehicle.battery.level
-        print "##########################################"
+
+        print("########################\n"
+              "# Battery information: #\n"
+              "# voltage : {:>7.2f}    #\n"
+              "# current : {:>7.3f}    #\n"
+              "# level   : {:>7d}    #\n"
+              "########################"
+              .format(self.vehicle.battery.voltage, 
+                       self.vehicle.battery.current, 
+                       self.vehicle.battery.level))
 
     def get_location(self):
         return (self.current_location.lat, self.current_location.lon)
@@ -209,7 +211,8 @@ class Drone():
         self.current_location = location.global_relative_frame
 
     def mode_callback(self, vehicle, name, mode):
-        print "## mode changed: %s" % mode.name
+        print("## mode changed: {}".format(mode.name))
+
 
 def command_takeoff(alt):
     return dronekit.Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, alt)
