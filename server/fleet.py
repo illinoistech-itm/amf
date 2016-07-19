@@ -29,14 +29,14 @@ class Fleet():
 
 	def get_location(self, id):
 		"""Gets tuple (lat, lon) of drone with id."""
-		drone_list[id].get_location()
+		return drone_list[id].get_location()
 
 	def mission_ended(self, id):
 		"""
-		Returns true if drone with id has completed its mission, false otherwise.
+		Returns True if drone with id has completed its mission, False otherwise.
 		disconnect() needs to be called on the drone to free it for a new mission.
 		"""
-		drone_list[id].mission_ended()
+		return drone_list[id].mission_ended()
 
 	def disconnect(self, id):
 		"""Disconnects from drone with id and frees it for use."""
