@@ -1,8 +1,8 @@
-from dronekit import connect, VehicleMode, LocationGlobalRelative, LocationGlobal
 import dronekit
 from pymavlink import mavutil
 import time
 import frame_conversion
+from __future__ import print_function
 
 commands_dict = { mavutil.mavlink.MAV_CMD_NAV_TAKEOFF: "taking off",
                   mavutil.mavlink.MAV_CMD_NAV_WAYPOINT: "flying to waypoint",
@@ -20,22 +20,26 @@ class Drone():
     lat = None
     lon = None
 
-    def __init__(self, address, latitude, longitude, altitude=10):
+    display = None
+    mission_ended_aux = None
+
+    def __init__(self, address, latitude, longitude, altitude=10, display=False):
         self.lat = latitude
         self.lon = longitude
         self.cruise_altitude = altitude
         self.address = address
-        self.cmds = self.vehicle.commands
 
+        self.display = display
         self.mission_ended_aux = False
-
-        self.vehicle.add_attribute_listener('location', self.location_callback)
-        self.vehicle.add_attribute_listener('mode', self.mode_callback)
     
     def connect(self):
         print 'Connecting to vehicle on: %s' % self.address
-        self.vehicle = connect(self.address, wait_ready=True, baud=57600)#, heartbeat_timeout=10)
+        self.vehicle = dronekit.connect(self.address, wait_ready=True, baud=57600)#, heartbeat_timeout=10)
         print 'Connection established'
+
+        self.cmds = self.vehicle.commands
+        self.vehicle.add_attribute_listener('location', self.location_callback)
+        self.vehicle.add_attribute_listener('mode', self.mode_callback)
 
     def clear_mission(self):
         self.cmds.clear()
@@ -46,7 +50,7 @@ class Drone():
         self.cmds.wait_ready()
 
     def begin_mission(self):
-        self.vehicle.mode = VehicleMode("AUTO")
+        self.vehicle.mode = dronekit.VehicleMode("AUTO")
 
     def prepare_mission(self):
         # Takeoff (dummy for now, one because first isnt added)
@@ -80,10 +84,10 @@ class Drone():
             return None
         missionitem=self.cmds[nextwaypoint-1] #commands are zero indexed
         if missionitem.command == mavutil.mavlink.MAV_CMD_NAV_WAYPOINT:
-            lat=missionitem.x
-            lon=missionitem.y
-            alt=missionitem.z
-            targetWaypointLocation=LocationGlobalRelative(lat,lon,alt)
+            lat = missionitem.x
+            lon = missionitem.y
+            alt = missionitem.z
+            targetWaypointLocation = dronekit.LocationGlobalRelative(lat,lon,alt)
             distancetopoint = frame_conversion.get_distance_metres(self.vehicle.location.global_frame, targetWaypointLocation)
             return distancetopoint
         if missionitem.command == mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH:
@@ -101,7 +105,7 @@ class Drone():
             
         print "Arming motors"
         # Copter should arm in GUIDED mode
-        self.vehicle.mode = VehicleMode("GUIDED")
+        self.vehicle.mode = dronekit.VehicleMode("GUIDED")
         self.vehicle.armed = True    
 
         # Confirm vehicle armed before attempting to take off
