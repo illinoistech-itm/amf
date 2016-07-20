@@ -561,14 +561,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onDialogPositiveClick(DialogFragment dialog) {
         sendRequestInfo(centerLocation.latitude, centerLocation.longitude,
                 mAddressOutput,
-                createRequestID(),
-                uniqueID);
-    }
-
-
-
-    @Override
-    public void onDialogNegativeClick(DialogFragment dialog) {
+                uniqueID,
+                createRequestID());
     }
 
 }

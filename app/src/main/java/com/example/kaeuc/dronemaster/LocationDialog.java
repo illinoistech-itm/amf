@@ -12,7 +12,7 @@ public class LocationDialog extends DialogFragment {
 
     public interface ConfirmDialogListener {
         public void onDialogPositiveClick(DialogFragment dialog);
-        public void onDialogNegativeClick(DialogFragment dialog);
+//        public void onDialogNegativeClick(DialogFragment dialog);
     }
 
     ConfirmDialogListener dialogListener;
@@ -36,12 +36,6 @@ public class LocationDialog extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialogListener.onDialogPositiveClick(LocationDialog.this);
-                    }
-                })
-                .setNegativeButton("Change Address", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialogListener.onDialogNegativeClick(LocationDialog.this);
                     }
                 });
 

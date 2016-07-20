@@ -69,10 +69,11 @@ public class SendDataToServer extends AsyncTask<String,String,String> {
         String jsonResponse = null;
         String jsonData = params[0];
         HttpURLConnection connection = null;
+
         BufferedReader reader = null;
         try{
-
-            URL url = new URL("http://104.194.106.230:8080/request"/*getString(R.string.server_url)*/);
+            /*Server URL*/
+            URL url = new URL(mContext.getString(R.string.server_url));
             connection = (HttpURLConnection) url.openConnection();
             connection.setReadTimeout( 10000 /*milliseconds*/ );
             connection.setConnectTimeout( 15000 /* milliseconds */ );
@@ -82,8 +83,12 @@ public class SendDataToServer extends AsyncTask<String,String,String> {
             connection.connect();
 
 
+
+
             Writer writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
             writer.write(jsonData);
+
+            Log.i("JsonData",jsonData);
 
             writer.close();
 
@@ -106,7 +111,7 @@ public class SendDataToServer extends AsyncTask<String,String,String> {
                 return null;
             }
             jsonResponse = buffer.toString();
-            Log.i(TAG,jsonResponse);
+            Log.i("JsonResponse",jsonResponse);
             return jsonResponse;
 
         }catch (IOException e){
