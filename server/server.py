@@ -5,6 +5,7 @@ import random
 from drone import drone
 import sys
 import subprocess
+import os
 
 class S(BaseHTTPRequestHandler):
     def _set_headers(self):
@@ -38,7 +39,14 @@ class S(BaseHTTPRequestHandler):
         print lon
         # address = data['address']
         # address = data['address']
-        subprocess.Popen("python drone/launch.py sitl %s %s 0" % (lat, lon), shell=True)
+        if os.name=="nt":
+            subprocess.Popen("python drone/launch.py sitl %s %s 0" % (lat, lon), creationflags = subprocess.CREATE_NEW_CONSOLE)
+        elif os.name=="posix":
+            # os.system('open -a Terminal "`python drone/launch.py sitl %s %s 0`"' % (lat, lon))
+            # os.system('open -a Terminal "`ls`"')
+
+            subprocess.Popen("python drone/launch.py sitl %s %s 0 > dump.txt" % (lat, lon), shell=True)
+
 
         # start_lat = 41.833474
         # start_lon = -87.626819
