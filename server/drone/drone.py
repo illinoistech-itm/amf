@@ -53,9 +53,11 @@ class Drone():
 
     def begin_mission(self):
         self.vehicle.mode = dronekit.VehicleMode("AUTO")
+        self.download_mission()
 
     def prepare_mission(self):
-        # Takeoff (dummy for now, one because first isnt added)
+        # Takeoff (For some reason first command isnt added, so we add it twice)
+        self.cmds.add(command_takeoff(self.cruise_altitude))
         self.cmds.add(command_takeoff(self.cruise_altitude))
         # Go to destination
         self.cmds.add(command_waypoint(self.lat, self.lon, self.cruise_altitude))
@@ -114,19 +116,19 @@ class Drone():
             print(" Waiting for arming...", file=self.output)
             time.sleep(1)
 
-    def takeoff(self):
-        print("Taking off!", file=self.output)
-        self.vehicle.simple_takeoff(self.cruise_altitude) # Take off to target altitude
+    def start_throtle(self):
+        print("Starting throtle", file=self.output)
+        self.vehicle.simple_takeoff(1)#self.cruise_altitude) # Take off to target altitude
 
         # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
         #  after Vehicle.simple_takeoff will execute immediately).
-        while True:
-            print(" Altitude: {:.1f}".format(self.vehicle.location.global_relative_frame.alt ), file=self.output)
-            #Break and return from function just below target altitude.        
-            if self.vehicle.location.global_relative_frame.alt>=self.cruise_altitude*0.95: 
-                print("Reached target altitude", file=self.output)
-                break
-            time.sleep(1)
+        # while True:
+        #     print(" Altitude: {:.1f}".format(self.vehicle.location.global_relative_frame.alt ), file=self.output)
+        #     #Break and return from function just below target altitude.        
+        #     if self.vehicle.location.global_relative_frame.alt>=0.95:#self.cruise_altitude*0.95: 
+        #         print("Reached target altitude", file=self.output)
+        #         break
+        #     time.sleep(1)
 
     def simple_goto(self, waypoint):
         self.vehicle.simple_goto(waypoint)
@@ -140,11 +142,11 @@ class Drone():
         print("Uploading mission", file=self.output)
         self.upload_mission()
         time.sleep(2)
-        raw_input("Press enter to begin arming and taking off")
+        if self.output == sys.stdout:
+            raw_input("Press enter to begin arming and taking off")
         self.arm()
-        self.takeoff()
+        self.start_throtle()
         self.begin_mission()
-        self.download_mission()
 
     def close(self):
         print("Closing vehicle", file=self.output)
