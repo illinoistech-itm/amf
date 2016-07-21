@@ -7,6 +7,7 @@ import simplejson
 
 fleet = Fleet()
 
+
 class Handler(BaseHTTPRequestHandler):
 
     def _set_headers(self):
@@ -37,10 +38,10 @@ class Handler(BaseHTTPRequestHandler):
         lon = data['longitude']
 
         droneid = fleet.request(lat, lon)
-        if droneid is not -1:
-            fleet.connect(droneid)
+        # if droneid is not -1:
+        #     fleet.connect(droneid)
 
-        message =  "droneid: {}".format(droneid)
+        message =  "{}".format(data['address'])
         self.wfile.write(message)
         self.wfile.write('\n')
         print "@@@@@ end POST"
@@ -54,6 +55,8 @@ if __name__ == '__main__':
         port = int(sys.argv[1])
     else:
         port = 8080
-    server = ThreadedHTTPServer(('localhost', port), Handler)
+    # server = ThreadedHTTPServer(('localhost', port), Handler)
+    # server = ThreadedHTTPServer(('104.194.103.165', port), Handler)
+    server = ThreadedHTTPServer(('', port), Handler)
     print 'Starting server, use <Ctrl-C> to stop'
     server.serve_forever()
