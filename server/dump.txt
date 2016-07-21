@@ -1,0 +1,4 @@
+Starting copter simulator (SITL)
+SITL already Downloaded and Extracted.
+Ready to boot.
+Connecting to vehicle on: tcp:127.0.0.1:5760
