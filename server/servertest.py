@@ -4,9 +4,14 @@ import threading
 import sys
 from fleet import Fleet
 import simplejson
+import threading
 
 fleet = Fleet()
+app_dict = {}
 
+def connect_and_run(id):
+    fleet.connect(id)
+    # fleet.run(id)
 
 class Handler(BaseHTTPRequestHandler):
 
@@ -18,7 +23,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
-        message =  threading.currentThread().getName()
+
+        app_id = ''
+        drone_id = app_dict[app_id]
+        lat, lon = fleet.get_location(drone_id)
+
+        message = "{}, {}".format(lat, lon)
+
         self.wfile.write(message)
         self.wfile.write('\n')
         return
@@ -38,10 +49,16 @@ class Handler(BaseHTTPRequestHandler):
         lon = data['longitude']
 
         droneid = fleet.request(lat, lon)
-        # if droneid is not -1:
-        #     fleet.connect(droneid)
+        if droneid is not -1:
+            app_dict[data['instanceID']] = droneid
+            # fleet.connect(droneid)
+            message =  "{}".format(data['address'])
 
-        message =  "{}".format(data['address'])
+            t = threading.Thread(target=connect_and_run, args=(droneid,))
+            t.start()
+        else:
+            message = "-1"
+
         self.wfile.write(message)
         self.wfile.write('\n')
         print "@@@@@ end POST"
