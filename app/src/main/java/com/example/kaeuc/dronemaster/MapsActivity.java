@@ -36,6 +36,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,10 +54,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         /*Interface used to create a dialog window and get the results*/
-        LocationDialog.ConfirmDialogListener,SendDataToServer.AsyncResponse {
+        LocationDialog.ConfirmDialogListener, ServerTaskResponse,
+        DroneLocationResponse{
 
     /*TAG used for logs*/
     private static final String TAG = "MapsActivity";
+    private static final long DRONE_POSITION_INTERVAL = 8000;
 
     // Whether there is a Wi-Fi connection.
     private static boolean wifiConnected = false;
@@ -64,7 +68,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private static boolean locationPermissionGranted = false;
 
-    private static boolean gpsOn = false;
+
+
+    //  Drone Variables
+    private String droneRequestedID;
+    private MarkerOptions droneMarker;
+    private Handler droneHandler = new Handler();
+
 
     /*Inner class responsible to receive the results of the geofence intent*/
     private AddressResultReceiver mResultReceiver;
@@ -113,6 +123,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean moveCameraToUser;
     private boolean resumed;
 
+
+    /* Thread to get the drone location every time in a interval*/
+    Runnable getDroneLocation = new Runnable() {
+        @Override
+        public void run() {
+            new DroneLocation(MapsActivity.this).execute(droneRequestedID);
+            droneHandler.postDelayed(this,DRONE_POSITION_INTERVAL);
+        }
+    };
 
 
     /*
@@ -171,6 +190,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
 
+
+
     }
 
     @Override
@@ -185,10 +206,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onStop() {
         super.onStop();
         resumed = true;
-        stopLocationUpdates();
         if( mGoogleApiClient != null && mGoogleApiClient.isConnected() ) {
             mGoogleApiClient.disconnect();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        droneHandler.removeCallbacks(getDroneLocation);
+        super.onDestroy();
     }
 
     @Override
@@ -408,7 +434,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
             @Override
             public void onCameraChange(CameraPosition cameraPosition) {
-                mMap.clear();
                 centerLocation = mMap.getCameraPosition().target;
                 startIntentService(centerLocation.latitude,centerLocation.longitude);
             }
@@ -464,18 +489,39 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mCurrentLocation = location;
     }
 
+
+    public void onServerTaskCompleted(JSONObject output) {
+        try {
+            droneRequestedID = output.getString("droneID");
+            AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+            alertDialog.setTitle("Confirmation");
+            alertDialog.setMessage(output.getString("response"));
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            droneHandler.postDelayed(getDroneLocation,DRONE_POSITION_INTERVAL);
+
+                        }
+                    });
+            alertDialog.show();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     @Override
-    public void onTaskCompleted(String output) {
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle("Confirmation");
-        alertDialog.setMessage(output);
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-        alertDialog.show();
+    public void onDroneLocationResponse(JSONObject result) {
+        LatLng position = null;
+        try {
+            mMap.clear();
+            position = new LatLng(result.getDouble("latitude"),result.getDouble("longitude"));
+            droneMarker = new MarkerOptions().position(position);
+            mMap.addMarker(droneMarker);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -505,6 +551,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void sendRequestInfo(double lat, double lon, String address, String instanceId, String reqId){
         JSONObject locationObj = new JSONObject();
+        final String httpMethod = "POST";
         try{
             locationObj.put(getString(R.string.instance_id),instanceId);
             locationObj.put(getString(R.string.request_id),reqId);
@@ -516,13 +563,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         if (locationObj.length() > 0){
-            new SendDataToServer(this).execute(String.valueOf(locationObj));
+            new ServerAccess(this).execute(httpMethod,String.valueOf(locationObj));
         }
     }
-
-
-
-
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -564,5 +607,4 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 uniqueID,
                 createRequestID());
     }
-
 }

@@ -12,7 +12,8 @@
     <string name="wifi_connection">Wi-fi connection succeed.</string>
     <string name="mobile_connection">Mobile connection succeed.</string>
     <string name="no_wifi_or_mobile">No internet connection was detected.</string>
-    <string name="server_url">http://192.168.43.15:8080/request</string>
+    <string name="server_post_url">http://198.37.25.176:8080/request</string>
+    <string name="server_get_url">http://198.37.25.176:8080/droneLocation</string>
     <string name="splash_title">Illinois Institute of Technology \nSchool of Applied Technology</string>
     <string name="request_succeed">Request Received! Sending drone to:\n</string>
     <string name="request_prefix">REQUEST_</string>
