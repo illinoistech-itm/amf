@@ -5,6 +5,7 @@ import sys
 from fleet import Fleet
 import simplejson
 import threading
+import urlparse
 
 fleet = Fleet()
 app_dict = {}
@@ -17,20 +18,27 @@ class Handler(BaseHTTPRequestHandler):
 
     def _set_headers(self):
         self.send_response(200)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
-    
-    def do_GET(self):
-        self.send_response(200)
+        # self.send_header('Content-type', 'text/html')
         self.end_headers()
 
-        app_id = ''
-        drone_id = app_dict[app_id]
+    def do_GET(self):
+        # self.send_response(200)
+        self._set_headers()
+        # self.end_headers()
+        parsed_path = urlparse.urlparse(self.path)
+        instanceID = urlparse.parse_qs(parsed_path.query)['instanceID'][0]
+        drone_id = app_dict[instanceID]
         lat, lon = fleet.get_location(drone_id)
 
-        message = "{}, {}".format(lat, lon)
+        # message = "{}, {}".format(lat, lon)
+        response = {
+            "METHOD": "GET",
+            "RESPONSE": 200,
+            "LATITUDE": lat,
+            "LONGITUDE": lon
+        }
 
-        self.wfile.write(message)
+        self.wfile.write(response)
         self.wfile.write('\n')
         return
 
@@ -39,9 +47,9 @@ class Handler(BaseHTTPRequestHandler):
         print "@@@@@ start POST"
         self.data_string = self.rfile.read(int(self.headers['Content-Length']))
 
-        self.send_response(200)
-        self.end_headers()
-        
+        # self.send_response(200)
+        # self.end_headers()
+
         data = simplejson.loads(self.data_string)
 
         print "{}".format(data)
@@ -49,17 +57,29 @@ class Handler(BaseHTTPRequestHandler):
         lon = data['longitude']
 
         droneid = fleet.request(lat, lon)
+        # droneid = fleet.requestSITL(lat, lon)
+        # droneid = -1
         if droneid is not -1:
             app_dict[data['instanceID']] = droneid
-            # fleet.connect(droneid)
-            message =  "{}".format(data['address'])
+            fleet.connect(droneid)
+            response = {
+                "METHOD": "POST",
+                "RESPONSE": 200,
+                "ADDRESS": data['address']
+            }
+            # message =  "{}".format(data['address'])
 
             t = threading.Thread(target=connect_and_run, args=(droneid,))
             t.start()
         else:
-            message = "-1"
+            response = {
+                "METHOD": "POST",
+                "RESPONSE": -1,
+                "ADDRESS": data['address']
+            }
 
-        self.wfile.write(message)
+
+        self.wfile.write(response)
         self.wfile.write('\n')
         print "@@@@@ end POST"
         return

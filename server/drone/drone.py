@@ -33,10 +33,10 @@ class Drone():
 
         self.output = output
         self.mission_ended_aux = False
-    
+
     def connect(self):
         print('Connecting to vehicle on: {}'.format(self.address), file=self.output)
-        self.vehicle = dronekit.connect(self.address, wait_ready=True, baud=57600)#, heartbeat_timeout=10)
+        self.vehicle = dronekit.connect(self.address, wait_ready=True, baud=57600)#, heartbeat_timeout=59)
         print('Connection established', file=self.output)
 
         self.cmds = self.vehicle.commands
@@ -105,14 +105,14 @@ class Drone():
             print(" Waiting for vehicle to initialise...", file=self.output)
             time.sleep(1)
 
-            
+
         print("Arming motors", file=self.output)
         # Copter should arm in GUIDED mode
         self.vehicle.mode = dronekit.VehicleMode("GUIDED")
-        self.vehicle.armed = True    
+        self.vehicle.armed = True
 
         # Confirm vehicle armed before attempting to take off
-        while not self.vehicle.armed:      
+        while not self.vehicle.armed:
             print(" Waiting for arming...", file=self.output)
             time.sleep(1)
 
@@ -120,12 +120,12 @@ class Drone():
         print("Starting throtle", file=self.output)
         self.vehicle.simple_takeoff(1)#self.cruise_altitude) # Take off to target altitude
 
-        # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
+        # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command
         #  after Vehicle.simple_takeoff will execute immediately).
         # while True:
         #     print(" Altitude: {:.1f}".format(self.vehicle.location.global_relative_frame.alt ), file=self.output)
-        #     #Break and return from function just below target altitude.        
-        #     if self.vehicle.location.global_relative_frame.alt>=0.95:#self.cruise_altitude*0.95: 
+        #     #Break and return from function just below target altitude.
+        #     if self.vehicle.location.global_relative_frame.alt>=0.95:#self.cruise_altitude*0.95:
         #         print("Reached target altitude", file=self.output)
         #         break
         #     time.sleep(1)
@@ -175,7 +175,7 @@ class Drone():
     def get_status(self):
         current_command = self.cmds[self.cmds.next-1].command
 
-        return {"current" : self.cmds.next, 
+        return {"current" : self.cmds.next,
                 "total" : self.cmds.count,
                 "command" : commands_dict[current_command],
                 "distance" : self.distance_to_current_waypoint(),
@@ -200,8 +200,8 @@ class Drone():
               "# current : {:>7.3f}    #\n"
               "# level   : {:>7d}    #\n"
               "########################"
-              .format(self.vehicle.battery.voltage, 
-                       self.vehicle.battery.current, 
+              .format(self.vehicle.battery.voltage,
+                       self.vehicle.battery.current,
                        self.vehicle.battery.level), file=self.output)
 
     def get_location(self):

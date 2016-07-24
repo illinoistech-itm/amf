@@ -10,7 +10,7 @@ class Fleet():
         pass
 
     def request(self, lat, lon): #returns id or -1
-        """ 
+        """
         Requests for a drone.
         Returns the id of the drone if there is one available.
         Returns -1 if all drones are occupied.
@@ -23,6 +23,22 @@ class Fleet():
                 return i
 
         return -1
+
+    def requestSITL(self, lat, lon):
+        for i in range(len(self.drone_list)):
+            if self.drone_list[i][0] == None:
+                fo = open("logs/{:%Y-%m-%d..%H.%M.%S}..{}.txt".format(datetime.datetime.now(),i), "w")
+                self.drone_list[i][2] = fo
+                start_lat = 41.833474
+                start_lon = -87.626819
+                import dronekit_sitl
+                sitl = dronekit_sitl.start_default(start_lat, start_lon)
+                address = sitl.connection_string()
+                self.drone_list[i][0] = drone.Drone(address, lat, lon, altitude=10, output=fo)
+                return i
+
+        return -1
+
 
     def connect(self, id):
         """Connects to drone with id."""
