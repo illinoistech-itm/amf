@@ -8,6 +8,6 @@ import org.json.JSONObject;
 
 public interface DroneLocationResponse {
 
-    void onDroneLocationResponse(JSONObject result);
+    void onDroneLocationResponse(JSONObject output);
 
 }

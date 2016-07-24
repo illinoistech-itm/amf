@@ -50,7 +50,7 @@ public class ServerAccess extends AsyncTask<String,String,String> {
                 URL url = new URL(mContext.getString(R.string.server_post_url));
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setReadTimeout( 10000 /*milliseconds*/ );
-                connection.setConnectTimeout( 15000 /* milliseconds */ );
+                connection.setConnectTimeout( 30000 /* milliseconds */ );
                 connection.setDoOutput(true);
                 connection.setRequestProperty("Content-Type", "application/json");
                 connection.setRequestProperty("Accept", "application/json");
@@ -105,18 +105,26 @@ public class ServerAccess extends AsyncTask<String,String,String> {
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
         JSONObject jsonResult = null;
+//        Log.i("ServerResponse",result);
         try {
             jsonResult = new JSONObject(result);
-            if((jsonResult.getInt("response") == 200) && (jsonResult.getString("method").equalsIgnoreCase("POST"))){
-                String address = jsonResult.getString("address");
+            if((jsonResult.getInt("RESPONSE") == 200)){
+                String address = jsonResult.getString("ADDRESS");
                 final Resources res = mContext.getResources();
                 String successText = res.getString(R.string.request_succeed);
                 jsonResult.put("address",address);
                 jsonResult.put("response",successText + " "+ address);
-                jsonResult.put("droneID",jsonResult.getString("droneID"));
+                jsonResult.put("result",1);
+                callBack.onServerTaskCompleted(jsonResult);
+            }else if(jsonResult.getInt("RESPONSE") == -1){
+                String failText = mContext.getString(R.string.request_busy);
+                jsonResult.put("result",-1);
+                jsonResult.put("response",failText);
                 callBack.onServerTaskCompleted(jsonResult);
             }
         } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (NullPointerException e){
             e.printStackTrace();
         }
     }

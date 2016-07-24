@@ -36,7 +36,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONException;
@@ -57,79 +56,91 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         LocationDialog.ConfirmDialogListener, ServerTaskResponse,
         DroneLocationResponse{
 
-    /*TAG used for logs*/
+    //  TAG used for logs
+
     private static final String TAG = "MapsActivity";
-    private static final long DRONE_POSITION_INTERVAL = 8000;
-
-    // Whether there is a Wi-Fi connection.
-    private static boolean wifiConnected = false;
-    // Whether there is a mobile connection.
-    private static boolean mobileConnected = false;
-
-    private static boolean locationPermissionGranted = false;
 
 
+    /*  Checking variables  */
 
-    //  Drone Variables
-    private String droneRequestedID;
+    private boolean wifiConnected = false;
+    private boolean mobileConnected = false;
+    private boolean locationPermissionGranted = false;
+    private boolean moveCameraToUser = false;
+    private boolean activityResumed = false;
+    private boolean orderDelivered = false;
+
+
+    /*  Drone Variables */
+
+//    private String droneRequestedID;
     private MarkerOptions droneMarker;
     private Handler droneHandler = new Handler();
+    private static final long DRONE_POSITION_INTERVAL = 8000;
 
 
-    /*Inner class responsible to receive the results of the geofence intent*/
-    private AddressResultReceiver mResultReceiver;
+    /* Location variables */
 
-    /*Stores the address returned by the geofence*/
+    //  Stores parameters for requests to the FusedLocationProviderApi.
+    protected LocationRequest mLocationRequest;
+    //  Stores the address returned by the geofence
     private String mAddressOutput;
+    // Stores the current device location
+    private Location mCurrentLocation;
+    //  Coordinates of the screen center
+    private LatLng centerLocation;
 
-    /*
-    * UI Widgets
-    */
+
+     /* STATIC VARIABLES */
+
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    //  Permissions needed
+    private static final String [] PERMISSIONS_REQUIRED = {Manifest.permission.ACCESS_FINE_LOCATION};
+
+
+    /*  UI Widgets  */
     private GoogleMap mMap;
     private Button btnRequest;
     private TextView txtAddress;
 
 
-    /**
-     * Provides the entry point to Google Play services.
-     */
+    // Instance to receive the geofence address
+    private AddressResultReceiver mResultReceiver;
+
+     // Provides the entry point to Google Play services.
     protected GoogleApiClient mGoogleApiClient;
 
-    /**
-     * Stores parameters for requests to the FusedLocationProviderApi.
-     */
-    protected LocationRequest mLocationRequest;
-
-    /*
-    * Stores the current device location
-    */
-    private Location mCurrentLocation;
-
-    /* Coordinates of the screen center*/
-    private LatLng centerLocation;
-
-    /* Unique instance ID. Maybe can change for a user ID in the future */
-    private String uniqueID = UUID.randomUUID().toString();
-    
-    
-    /**
-     * STATIC VARIABLES
-     */
-
-    /*Variables needed to request permission to get location*/
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
-
-    private static final String [] PERMISSIONS_REQUIRED = {Manifest.permission.ACCESS_FINE_LOCATION};
-    private boolean moveCameraToUser;
-    private boolean resumed;
+    // Unique instance ID. Maybe can change for a user ID in the future */
+    private String instanceAppID = UUID.randomUUID().toString();
 
 
-    /* Thread to get the drone location every time in a interval*/
+    // Inner class responsible to receive the results of the geofence intent
+    @SuppressLint("ParcelCreator")
+    class AddressResultReceiver extends ResultReceiver {
+        public AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            // Display the address string
+            // or an error message sent from the intent service.
+            mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
+            txtAddress.setText(mAddressOutput);
+            // Show a toast message if an address was found.
+            if (resultCode == Constants.SUCCESS_RESULT) {
+                txtAddress.setText(mAddressOutput);
+            }
+        }
+    }
+
+    //  Thread to get the drone location every time in a interval
     Runnable getDroneLocation = new Runnable() {
         @Override
         public void run() {
-            new DroneLocation(MapsActivity.this).execute(droneRequestedID);
-            droneHandler.postDelayed(this,DRONE_POSITION_INTERVAL);
+            if(!orderDelivered) {
+                new DroneLocation(MapsActivity.this).execute(/*droneRequestedID*/instanceAppID);
+                droneHandler.postDelayed(this, DRONE_POSITION_INTERVAL);
+            }
         }
     };
 
@@ -137,8 +148,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     /*
     *   ACTIVITY METHODS START
     */
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,7 +175,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             moveCameraToUser = true;
         }
 
-        resumed = false;
+        activityResumed = false;
 
         //  Checks if the gps and network are on and working
         if(checkNetworkConnection() && checkGpsConnection()){
@@ -188,10 +197,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // Turn on gps dialog
                 Toast.makeText(this, "No GPS connection", Toast.LENGTH_SHORT).show();
         }
-
-
-
-
     }
 
     @Override
@@ -205,7 +210,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onStop() {
         super.onStop();
-        resumed = true;
+        activityResumed = true;
         if( mGoogleApiClient != null && mGoogleApiClient.isConnected() ) {
             mGoogleApiClient.disconnect();
         }
@@ -272,9 +277,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-
-
-
     private void checkLocationPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -311,13 +313,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
         if(locationPermissionGranted)
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,mLocationRequest,this);
-    }
-
-    /*
-     *  Stops the location update, use when there is no need of the gps
-     */
-    protected void stopLocationUpdates(){
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,this);
     }
 
     /**
@@ -472,7 +467,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             locationPermissionGranted = true;
             onConnected(new Bundle());
         }else{
-            Toast.makeText(this, "You need to grant location permissions", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "You need to grant GPS permissions", Toast.LENGTH_LONG).show();
             this.finish();
         }
     }
@@ -491,20 +486,38 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     public void onServerTaskCompleted(JSONObject output) {
+        int codeResult=0;
         try {
-            droneRequestedID = output.getString("droneID");
+            codeResult = output.getInt("result");
+            if(codeResult == 1){
+                // maybe remove this later
+//            droneRequestedID = output.getString("droneID");
             AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-            alertDialog.setTitle("Confirmation");
+            alertDialog.setTitle("Confirmation.");
             alertDialog.setMessage(output.getString("response"));
             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
                             droneHandler.postDelayed(getDroneLocation,DRONE_POSITION_INTERVAL);
-
                         }
                     });
             alertDialog.show();
+            }else if(codeResult == -1){
+                AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+                alertDialog.setTitle("Ooops!");
+                alertDialog.setMessage(output.getString("response"));
+                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                alertDialog.show();
+            }else{
+                // TODO
+                // error message
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -512,13 +525,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onDroneLocationResponse(JSONObject result) {
+    public void onDroneLocationResponse(JSONObject output) {
         LatLng position = null;
+        int resultCode = 0;
         try {
-            mMap.clear();
-            position = new LatLng(result.getDouble("latitude"),result.getDouble("longitude"));
-            droneMarker = new MarkerOptions().position(position);
-            mMap.addMarker(droneMarker);
+            resultCode = output.getInt("RESPONSE");
+            if(resultCode == 200){
+                mMap.clear();
+                position = new LatLng(output.getDouble("LATITUDE"), output.getDouble("LONGITUDE"));
+                droneMarker = new MarkerOptions().position(position);
+                mMap.addMarker(droneMarker);
+            }else if(resultCode == -1){
+                mMap.clear();
+                Toast.makeText(this, "The packaged was delivered!", Toast.LENGTH_LONG).show();
+                orderDelivered = true;
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -528,26 +549,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     /**
      * INTERFACES METHODS END
      */
-
-
-    @SuppressLint("ParcelCreator")
-    class AddressResultReceiver extends ResultReceiver {
-        public AddressResultReceiver(Handler handler) {
-            super(handler);
-        }
-        @Override
-        protected void onReceiveResult(int resultCode, Bundle resultData) {
-            // Display the address string
-            // or an error message sent from the intent service.
-            mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
-            txtAddress.setText(mAddressOutput);
-
-            // Show a toast message if an address was found.
-            if (resultCode == Constants.SUCCESS_RESULT) {
-                txtAddress.setText(mAddressOutput);
-            }
-        }
-    }
 
     public void sendRequestInfo(double lat, double lon, String address, String instanceId, String reqId){
         JSONObject locationObj = new JSONObject();
@@ -583,7 +584,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         startLocationUpdates();
         mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         checkLocationPermissions();
-        if(resumed){
+        if(activityResumed){
             initMapCamera(centerLocation);
         }else{
             initMapCamera(mCurrentLocation);
@@ -604,7 +605,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onDialogPositiveClick(DialogFragment dialog) {
         sendRequestInfo(centerLocation.latitude, centerLocation.longitude,
                 mAddressOutput,
-                uniqueID,
+                instanceAppID,
                 createRequestID());
     }
 }

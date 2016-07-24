@@ -35,12 +35,12 @@ public class DroneLocation extends AsyncTask<String,Void,String> {
     protected String doInBackground(String... params) {
         String jsonResponse = null;
         HttpURLConnection connection = null;
-        String appID = "appID";
+        String appID = params[0];
         String query = "";
-        String droneID = params[0];
+//        String droneID = params[0];
             try{
-                query = String.format("droneID=%s&appID=%s",
-                        URLEncoder.encode(droneID,"UTF-8"),
+                query = String.format("instanceID=%s",
+                        /*URLEncoder.encode(droneID,"UTF-8"),*/
                         URLEncoder.encode(appID,"UTF-8"));
                 URL url = new URL(parentContext.getString(R.string.server_get_url) +"?"+ query);
                 connection = (HttpURLConnection) url.openConnection();

@@ -64,7 +64,7 @@ public class FetchAddressIntentService extends IntentService {
         // send an error error message and return.
         if (location == null) {
             errorMessage = getString(R.string.no_location_data_provided);
-//            Log.wtf(TAG, errorMessage);
+            Log.wtf(TAG, errorMessage);
             deliverResultToReceiver(Constants.FAILURE_RESULT, errorMessage);
             return;
         }
@@ -88,9 +88,6 @@ public class FetchAddressIntentService extends IntentService {
             // Using getFromLocation() returns an array of Addresses for the area immediately
             // surrounding the given latitude and longitude. The results are a best guess and are
             // not guaranteed to be accurate.
-//            Log.wtf(TAG,String.valueOf(latitude));
-//            Log.wtf(TAG,String.valueOf(longitude));
-
             addresses = geocoder.getFromLocation(
                     latitude,
                     longitude,
@@ -98,7 +95,7 @@ public class FetchAddressIntentService extends IntentService {
                     1);
         } catch (IOException ioException) {
             // Catch network or other I/O problems.
-            Log.e(TAG, errorMessage, ioException);
+            ioException.printStackTrace();
         } catch (IllegalArgumentException illegalArgumentException) {
             // Catch invalid latitude or longitude values.
             errorMessage = getString(R.string.invalid_lat_long_used);
@@ -125,7 +122,7 @@ public class FetchAddressIntentService extends IntentService {
             for(int i = 0; i < address.getMaxAddressLineIndex() -1; i++) {
                 addressFragments.add(address.getAddressLine(i));
             }
-//            Log.i(TAG, getString(R.string.address_found));
+
             deliverResultToReceiver(Constants.SUCCESS_RESULT,
                     TextUtils.join(System.getProperty("line.separator"), addressFragments));
         }
