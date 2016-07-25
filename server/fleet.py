@@ -8,7 +8,7 @@ class Fleet():
 
     def __init__(self, com_list):
         for string in com_list:
-            drone_list.append([None, string, None])
+            self.drone_list.append([None, string, None])
 
     def request(self, lat, lon): #returns id or -1
         """
