@@ -50,7 +50,7 @@ public class ServerAccess extends AsyncTask<String,String,String> {
                 URL url = new URL(mContext.getString(R.string.server_post_url));
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setReadTimeout( 10000 /*milliseconds*/ );
-                connection.setConnectTimeout( 30000 /* milliseconds */ );
+                connection.setConnectTimeout( 10000 /* milliseconds */ );
                 connection.setDoOutput(true);
                 connection.setRequestProperty("Content-Type", "application/json");
                 connection.setRequestProperty("Accept", "application/json");
