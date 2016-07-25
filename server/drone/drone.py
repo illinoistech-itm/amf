@@ -24,6 +24,7 @@ class Drone():
 
     output = None
     mission_ended_aux = None
+    mission_ended_bool = None
 
     def __init__(self, address, latitude, longitude, altitude=10, output=sys.stdout):
         self.lat = latitude
@@ -33,6 +34,9 @@ class Drone():
 
         self.output = output
         self.mission_ended_aux = False
+        self.mission_ended_bool = False
+
+        print('Drone target: {}, {}'.format(self.lat, self.lon), file=self.output)
 
     def connect(self):
         print('Connecting to vehicle on: {}'.format(self.address), file=self.output)
@@ -182,15 +186,18 @@ class Drone():
                 "altitude" : self.altitude
                 }
 
-    def mission_ended(self):
+    def check_mission_ended(self):
         if self.cmds.next > 1:
             self.mission_ended_aux = True
-            return False
+            self.mission_ended_bool = False
         elif self.cmds.next == 1 and self.mission_ended_aux:
             self.mission_ended_aux = False
-            return True
+            self.mission_ended_bool = True
         elif self.cmds.next == 1 and not self.mission_ended_aux:
-            return False
+            self.mission_ended_bool = False
+
+    def mission_ended(self):
+        return self.mission_ended_bool
 
     def show_battery(self):
 
@@ -211,6 +218,7 @@ class Drone():
         if location.global_relative_frame.alt is not None:
             self.altitude = location.global_relative_frame.alt
 
+        self.check_mission_ended()
         self.current_location = location.global_relative_frame
 
     def mode_callback(self, vehicle, name, mode):
