@@ -10,9 +10,11 @@ import urlparse
 fleet = Fleet(["com7", "com23"])
 app_dict = {}
 
-def connect_and_run(id):
-    fleet.connect(id)
-    # fleet.run(id)
+def connect_and_run(instanceID):
+    droneid = app_dict[instanceID][0]
+    fleet.connect(droneid)
+    fleet.run(droneid)
+    app_dict[instanceID][1] = True
 
 class Handler(BaseHTTPRequestHandler):
 
@@ -36,8 +38,15 @@ class Handler(BaseHTTPRequestHandler):
                 "LATITUDE": 0,
                 "LONGITUDE": 0
             }
+        elif not app_dict[instanceID][1]:
+            response = {
+                "METHOD": "GET",
+                "RESPONSE": -3,
+                "LATITUDE": 0,
+                "LONGITUDE": 0
+            }
         else:
-            droneid = app_dict[instanceID]
+            droneid = app_dict[instanceID][0]
             # message = "{}, {}".format(lat, lon)
             if not fleet.mission_ended(droneid):
                 try:
@@ -84,7 +93,7 @@ class Handler(BaseHTTPRequestHandler):
         # droneid = fleet.requestSITL(lat, lon)
         # droneid = -1
         if droneid is not -1:
-            app_dict[data['instanceID']] = droneid
+            app_dict[data['instanceID']] = [droneid, False]
             # fleet.connect(droneid)
             response = {
                 "METHOD": "POST",
@@ -93,7 +102,7 @@ class Handler(BaseHTTPRequestHandler):
             }
             # message =  "{}".format(data['address'])
 
-            t = threading.Thread(target=connect_and_run, args=(droneid,))
+            t = threading.Thread(target=connect_and_run, args=(instanceID,))
             t.start()
         else:
             response = {
