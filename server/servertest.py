@@ -29,12 +29,21 @@ class Handler(BaseHTTPRequestHandler):
         instanceID = urlparse.parse_qs(parsed_path.query)['instanceID'][0]
 
         if instanceID not in app_dict:
-            response = "-1"
+            # response = "-1"
+            response = {
+                "METHOD": "GET",
+                "RESPONSE": -1,
+                "LATITUDE": 0,
+                "LONGITUDE": 0
+            }
         else:
             droneid = app_dict[instanceID]
             # message = "{}, {}".format(lat, lon)
             if not fleet.mission_ended(droneid):
-                lat, lon = fleet.get_location(droneid)
+                try:
+                    lat, lon = fleet.get_location(droneid)
+                except Exception as e:
+                    pass
                 fleet.log_status()
                 response = {
                     "METHOD": "GET",
@@ -43,8 +52,15 @@ class Handler(BaseHTTPRequestHandler):
                     "LONGITUDE": lon
                 }
             else:
-                response = "-2"
+                # response = "-2"
+                response = {
+                    "METHOD": "GET",
+                    "RESPONSE": -2,
+                    "LATITUDE": 0,
+                    "LONGITUDE": 0
+                }
                 fleet.disconnect(droneid)
+                app_dict.pop(instanceID, None)
 
         self.wfile.write(response)
         self.wfile.write('\n')
