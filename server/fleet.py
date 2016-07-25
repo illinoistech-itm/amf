@@ -76,3 +76,6 @@ class Fleet():
         Returns dictionary with fields: current, total, command, distance and altitude.
         """
         return self.drone_list[id][0].get_status()
+
+    def log_status(self,id):
+        self.drone_list[id][0].log_status()

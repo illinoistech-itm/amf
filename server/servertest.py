@@ -32,16 +32,19 @@ class Handler(BaseHTTPRequestHandler):
             response = "-1"
         else:
             droneid = app_dict[instanceID]
-            lat, lon = fleet.get_location(droneid)
-
             # message = "{}, {}".format(lat, lon)
             if not fleet.mission_ended(droneid):
+                lat, lon = fleet.get_location(droneid)
+                fleet.log_status()
                 response = {
                     "METHOD": "GET",
                     "RESPONSE": 200,
                     "LATITUDE": lat,
                     "LONGITUDE": lon
                 }
+            else:
+                response = "-2"
+                fleet.disconnect(droneid)
 
         self.wfile.write(response)
         self.wfile.write('\n')

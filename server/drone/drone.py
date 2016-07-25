@@ -216,6 +216,15 @@ class Drone():
     def mode_callback(self, vehicle, name, mode):
         print("## mode changed: {}".format(mode.name), file=self.output)
 
+    def log_status(self):
+        print("{current} / {total}: {command} ".format(current=self.cmds.next,
+                    total=self.cmds.count, command=commands_dict[current_command]), end="", file=self.output)
+
+        if current_command in [mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH]:
+            print("@ distance {:.1f} ".format(self.distance_to_current_waypoint()), end="", file=self.output)
+
+        print("@ altitude {:.1f}".format(self.altitude), file=self.output)
+
 
 def command_takeoff(alt):
     return dronekit.Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, alt)
