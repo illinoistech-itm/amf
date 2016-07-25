@@ -8,7 +8,9 @@ import threading
 import urlparse
 
 fleet = Fleet(["com7", "com23"])
+fleet_lock = threading.Lock()
 app_dict = {}
+dict_lock = threading.Lock()
 
 def connect_and_run(instanceID):
     droneid = app_dict[instanceID][0]
@@ -49,10 +51,8 @@ class Handler(BaseHTTPRequestHandler):
             droneid = app_dict[instanceID][0]
             # message = "{}, {}".format(lat, lon)
             if not fleet.mission_ended(droneid):
-                try:
-                    lat, lon = fleet.get_location(droneid)
-                except Exception as e:
-                    pass
+                lat, lon = fleet.get_location(droneid)
+
                 fleet.log_status()
                 response = {
                     "METHOD": "GET",
@@ -68,8 +68,14 @@ class Handler(BaseHTTPRequestHandler):
                     "LATITUDE": 0,
                     "LONGITUDE": 0
                 }
+                fleet_lock.acquire()
                 fleet.disconnect(droneid)
+                fleet_lock.release()
+
+                dict_lock.acquire()
                 app_dict.pop(instanceID, None)
+                dict_lock.release()
+                
 
         self.wfile.write(response)
         self.wfile.write('\n')
@@ -89,20 +95,26 @@ class Handler(BaseHTTPRequestHandler):
         lat = data['latitude']
         lon = data['longitude']
 
+        fleet_lock.acquire()
         droneid = fleet.request(lat, lon)
+        fleet_lock.release()
+        
         # droneid = fleet.requestSITL(lat, lon)
         # droneid = -1
         if droneid is not -1:
-            app_dict[data['instanceID']] = [droneid, False]
-            # fleet.connect(droneid)
+            appID = data['instanceID']
+            
+            dict_lock.acquire()
+            app_dict[appID] = [droneid, False]
+            dict_lock.release()
+
             response = {
                 "METHOD": "POST",
                 "RESPONSE": 200,
                 "ADDRESS": data['address']
             }
-            # message =  "{}".format(data['address'])
 
-            t = threading.Thread(target=connect_and_run, args=(instanceID,))
+            t = threading.Thread(target=connect_and_run, args=(appID,))
             t.start()
         else:
             response = {
