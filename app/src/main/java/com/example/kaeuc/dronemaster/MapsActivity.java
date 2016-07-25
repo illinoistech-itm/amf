@@ -34,6 +34,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -138,7 +139,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void run() {
             if(!orderDelivered) {
-                new DroneLocation(MapsActivity.this).execute(/*droneRequestedID*/instanceAppID);
+                new DroneLocation(MapsActivity.this).execute(instanceAppID);
                 droneHandler.postDelayed(this, DRONE_POSITION_INTERVAL);
             }
         }
@@ -533,9 +534,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if(resultCode == 200){
                 mMap.clear();
                 position = new LatLng(output.getDouble("LATITUDE"), output.getDouble("LONGITUDE"));
-                droneMarker = new MarkerOptions().position(position);
+                droneMarker = new MarkerOptions().position(position)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.drone_icon))
+                        .anchor((float)0.5,(float)0.5)
+                        .rotation((float)90.0)
+                        .flat(true);
                 mMap.addMarker(droneMarker);
-            }else if(resultCode == -1){
+            }else if(resultCode == -2){
                 mMap.clear();
                 Toast.makeText(this, "The packaged was delivered!", Toast.LENGTH_LONG).show();
                 orderDelivered = true;
@@ -593,12 +598,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onConnectionSuspended(int i) {
-
+        Log.e(TAG,"Google API connection was suspended");
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
+        Log.e(TAG,"It was not possible to connect to Google API.");
     }
 
     @Override
