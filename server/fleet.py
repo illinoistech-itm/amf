@@ -4,10 +4,11 @@ import datetime
 
 class Fleet():
     # [droneObj, port, logfile]
-    drone_list = [[None, "com6", None],[None, "com7", None]]
+    drone_list = []
 
-    def __init__(self):
-        pass
+    def __init__(self, com_list):
+        for string in com_list:
+            drone_list.append([None, string, None])
 
     def request(self, lat, lon): #returns id or -1
         """

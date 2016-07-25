@@ -7,7 +7,7 @@ import simplejson
 import threading
 import urlparse
 
-fleet = Fleet()
+fleet = Fleet(["com7", "com23"])
 app_dict = {}
 
 def connect_and_run(id):
