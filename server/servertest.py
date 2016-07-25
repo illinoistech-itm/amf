@@ -27,16 +27,21 @@ class Handler(BaseHTTPRequestHandler):
         # self.end_headers()
         parsed_path = urlparse.urlparse(self.path)
         instanceID = urlparse.parse_qs(parsed_path.query)['instanceID'][0]
-        drone_id = app_dict[instanceID]
-        lat, lon = fleet.get_location(drone_id)
 
-        # message = "{}, {}".format(lat, lon)
-        response = {
-            "METHOD": "GET",
-            "RESPONSE": 200,
-            "LATITUDE": lat,
-            "LONGITUDE": lon
-        }
+        if instanceID not in app_dict:
+            response = "-1"
+        else:
+            droneid = app_dict[instanceID]
+            lat, lon = fleet.get_location(droneid)
+
+            # message = "{}, {}".format(lat, lon)
+            if not fleet.mission_ended(droneid):
+                response = {
+                    "METHOD": "GET",
+                    "RESPONSE": 200,
+                    "LATITUDE": lat,
+                    "LONGITUDE": lon
+                }
 
         self.wfile.write(response)
         self.wfile.write('\n')
@@ -61,7 +66,7 @@ class Handler(BaseHTTPRequestHandler):
         # droneid = -1
         if droneid is not -1:
             app_dict[data['instanceID']] = droneid
-            fleet.connect(droneid)
+            # fleet.connect(droneid)
             response = {
                 "METHOD": "POST",
                 "RESPONSE": 200,
