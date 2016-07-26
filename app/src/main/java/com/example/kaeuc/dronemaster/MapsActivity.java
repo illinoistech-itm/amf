@@ -20,7 +20,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -77,7 +80,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //    private String droneRequestedID;
     private MarkerOptions droneMarker;
     private Handler droneHandler = new Handler();
-    private static final long DRONE_POSITION_INTERVAL = 8000;
+    private static final long DRONE_POSITION_INTERVAL = 3000;
 
 
     /* Location variables */
@@ -103,6 +106,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     private Button btnRequest;
     private TextView txtAddress;
+    private Toolbar toolbar;
 
 
     // Instance to receive the geofence address
@@ -164,6 +168,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //  Find UI Widgets
         btnRequest = (Button) findViewById(R.id.btn_request);
         txtAddress = (TextView) findViewById(R.id.txt_address);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+//        getSupportActionBar().setDisplayShowHomeEnabled(true);
+//        getSupportActionBar().setLogo(R.drawable.app_icon);
+//        getSupportActionBar().setDisplayUseLogoEnabled(true);
 
 
         //  Initiate the receiver (which is gonna receive the address)
@@ -228,6 +237,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onResume();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.actionbar_menus, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.settings:
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
+
+    }
+
     /*
     *   ACTIVITY METHODS END
     */
@@ -265,15 +293,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void initMapCamera(LatLng location) {
         if(!moveCameraToUser) {
             if (locationPermissionGranted) {
-                CameraPosition cameraPosition = CameraPosition.builder().target(
-                        new LatLng(location.latitude, location.longitude))
-                        .zoom(16f)
-                        .bearing(0.0f)
-                        .tilt(0.0f)
-                        .build();
-
-                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                enableMyLocation();
+                    CameraPosition cameraPosition = CameraPosition.builder().target(
+                            new LatLng(location.latitude, location.longitude))
+                            .zoom(16f)
+                            .bearing(0.0f)
+                            .tilt(0.0f)
+                            .build();
+                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                    enableMyLocation();
             }
         }
     }

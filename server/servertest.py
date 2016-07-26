@@ -102,7 +102,7 @@ class Handler(BaseHTTPRequestHandler):
             }
             # message =  "{}".format(data['address'])
 
-            t = threading.Thread(target=connect_and_run, args=(instanceID,))
+            t = threading.Thread(target=connect_and_run, args=(data['instanceID'],))
             t.start()
         else:
             response = {
