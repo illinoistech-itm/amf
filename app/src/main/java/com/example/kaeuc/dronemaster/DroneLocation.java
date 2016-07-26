@@ -80,6 +80,8 @@ public class DroneLocation extends AsyncTask<String,Void,String> {
             callBack.onDroneLocationResponse(response);
         } catch (JSONException e) {
             e.printStackTrace();
+        }catch (NullPointerException e){
+            e.printStackTrace();
         }
 
     }

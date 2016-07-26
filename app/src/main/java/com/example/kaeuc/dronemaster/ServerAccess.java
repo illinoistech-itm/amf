@@ -40,14 +40,19 @@ public class ServerAccess extends AsyncTask<String,String,String> {
     @Override
     protected String doInBackground(String... params) {
         String jsonResponse = null;
-        String httpMethod = params[0];
-        String jsonData = params[1];
+        String jsonData = params[0];
+        String ipAddress = params[1];
         HttpURLConnection connection = null;
         BufferedReader reader = null;
-        if(httpMethod == "POST"){
+        /*Server URL*/
+        URL url = null;
             try{
-                /*Server URL*/
-                URL url = new URL(mContext.getString(R.string.server_post_url));
+                if(ipAddress.isEmpty())
+                    url = new URL(mContext.getString(R.string.server_post_url));
+                else
+                    url = new URL(ipAddress);
+
+                Log.wtf(TAG,ipAddress);
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setReadTimeout( 10000 /*milliseconds*/ );
                 connection.setConnectTimeout( 10000 /* milliseconds */ );
@@ -96,7 +101,6 @@ public class ServerAccess extends AsyncTask<String,String,String> {
                 }
 
             }
-        }
         return null;
     }
 
@@ -105,7 +109,6 @@ public class ServerAccess extends AsyncTask<String,String,String> {
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
         JSONObject jsonResult = null;
-//        Log.i("ServerResponse",result);
         try {
             jsonResult = new JSONObject(result);
             if((jsonResult.getInt("RESPONSE") == 200)){

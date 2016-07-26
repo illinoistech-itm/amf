@@ -1,80 +1,145 @@
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-import SocketServer
-import simplejson
-import random
-from drone import drone
+from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from SocketServer import ThreadingMixIn
+import threading
 import sys
-import subprocess
-import os
+from fleet import Fleet
+import simplejson
+import threading
+import urlparse
 
-class S(BaseHTTPRequestHandler):
+fleet = Fleet(["com7", "com23"])
+fleet_lock = threading.Lock()
+app_dict = {}
+dict_lock = threading.Lock()
+
+def connect_and_run(instanceID):
+    droneid = app_dict[instanceID][0]
+    fleet.connect(droneid)
+    fleet.run(droneid)
+    app_dict[instanceID][1] = True
+
+class Handler(BaseHTTPRequestHandler):
+
     def _set_headers(self):
         self.send_response(200)
-        self.send_header('Content-type', 'text/html')
+        # self.send_header('Content-type', 'text/html')
         self.end_headers()
 
-    # def do_GET(self):
-    #     self._set_headers()
-    #     f = open("index.html", "r")
-    #     self.wfile.write(f.read())
-
-    def do_HEAD(self):
+    def do_GET(self):
+        # self.send_response(200)
         self._set_headers()
+        # self.end_headers()
+        parsed_path = urlparse.urlparse(self.path)
+        instanceID = urlparse.parse_qs(parsed_path.query)['instanceID'][0]
+
+        if instanceID not in app_dict:
+            # response = "-1"
+            response = {
+                "METHOD": "GET",
+                "RESPONSE": -1,
+                "LATITUDE": 0,
+                "LONGITUDE": 0
+            }
+        elif not app_dict[instanceID][1]:
+            response = {
+                "METHOD": "GET",
+                "RESPONSE": -3,
+                "LATITUDE": 0,
+                "LONGITUDE": 0
+            }
+        else:
+            droneid = app_dict[instanceID][0]
+            # message = "{}, {}".format(lat, lon)
+            print("mission ended: {}".format(fleet.mission_ended(droneid)))
+            if not fleet.mission_ended(droneid):
+                lat, lon = fleet.get_location(droneid)
+
+                fleet.log_status()
+                response = {
+                    "METHOD": "GET",
+                    "RESPONSE": 200,
+                    "LATITUDE": lat,
+                    "LONGITUDE": lon
+                }
+            else:
+                # response = "-2"
+                response = {
+                    "METHOD": "GET",
+                    "RESPONSE": -2,
+                    "LATITUDE": 0,
+                    "LONGITUDE": 0
+                }
+                fleet_lock.acquire()
+                fleet.disconnect(droneid)
+                fleet_lock.release()
+
+                dict_lock.acquire()
+                app_dict.pop(instanceID, None)
+                dict_lock.release()
+                print("#######disconnecting drone#######")
+
+        self.wfile.write(response)
+        self.wfile.write('\n')
+        return
 
     def do_POST(self):
         self._set_headers()
-        print "in post method"
+        print "@@@@@ start POST"
         self.data_string = self.rfile.read(int(self.headers['Content-Length']))
 
-        self.send_response(200)
-        self.end_headers()
-        # simplejson.loads(s.replace('\r\n', ''))
+        # self.send_response(200)
+        # self.end_headers()
+
         data = simplejson.loads(self.data_string)
-        # with open("test123456.json", "w") as outfile:
-            # simplejson.dump(data, outfile)
+
         print "{}".format(data)
         lat = data['latitude']
-        print lat
         lon = data['longitude']
-        print lon
-        # address = data['address']
-        # address = data['address']
-        if os.name=="nt":
-            subprocess.Popen("python drone/launch.py sitl %s %s 0" % (lat, lon), creationflags = subprocess.CREATE_NEW_CONSOLE)
-        elif os.name=="posix":
-            # os.system('open -a Terminal "`python drone/launch.py sitl %s %s 0`"' % (lat, lon))
-            # os.system('open -a Terminal "`ls`"')
 
-            subprocess.Popen("python drone/launch.py sitl %s %s 0 > dump.txt" % (lat, lon), shell=True)
+        fleet_lock.acquire()
+        droneid = fleet.request(lat, lon)
+        fleet_lock.release()
+
+        # droneid = fleet.requestSITL(lat, lon)
+        # droneid = -1
+        if droneid is not -1:
+            appID = data['instanceID']
+
+            dict_lock.acquire()
+            app_dict[appID] = [droneid, False]
+            dict_lock.release()
+
+            response = {
+                "METHOD": "POST",
+                "RESPONSE": 200,
+                "ADDRESS": data['address']
+            }
+
+            t = threading.Thread(target=connect_and_run, args=(appID,))
+            t.start()
+        else:
+            response = {
+                "METHOD": "POST",
+                "RESPONSE": -1,
+                "ADDRESS": data['address']
+            }
 
 
-        # start_lat = 41.833474
-        # start_lon = -87.626819
-        # import dronekit_sitl
-        # sitl = dronekit_sitl.start_default(start_lat, start_lon)
-        # address = sitl.connection_string()
-        #
-        # d = drone.Drone(address, lat, lon)
-        # d.run()
-        # d.wait()
-
-        # f = open("for_presen.py")
-        # self.wfile.write(f.read())
+        self.wfile.write(response)
+        self.wfile.write('\n')
+        print "@@@@@ end POST"
         return
 
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    """Handle requests in a separate thread."""
 
-def run(server_class=HTTPServer, handler_class=S, port=8080):
-    # raw_input("Press Enter to continue...")
-    server_address = ('', port)
-    httpd = server_class(server_address, handler_class)
-    sa = httpd.socket.getsockname()
-    print "Serving HTTP on", sa[0], "port", sa[1], "..."
-    httpd.serve_forever()
-
-if __name__ == "__main__":
-    from sys import argv
-
-if len(argv) == 2:
-    run(port=int(argv[1]))
-else:
-    run()
+if __name__ == '__main__':
+    if sys.argv[1:]:
+        port = int(sys.argv[1])
+    else:
+        port = 8080
+    # server = ThreadedHTTPServer(('localhost', port), Handler)
+    # server = ThreadedHTTPServer(('104.194.103.165', port), Handler)
+    server = ThreadedHTTPServer(('', port), Handler)
+    print 'Starting server, use <Ctrl-C> to stop'
+    server.serve_forever()
