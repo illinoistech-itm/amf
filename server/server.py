@@ -31,7 +31,6 @@ class Handler(BaseHTTPRequestHandler):
         # self.end_headers()
         parsed_path = urlparse.urlparse(self.path)
         instanceID = urlparse.parse_qs(parsed_path.query)['instanceID'][0]
-
         if instanceID not in app_dict:
             response = {
                 "METHOD": "GET",

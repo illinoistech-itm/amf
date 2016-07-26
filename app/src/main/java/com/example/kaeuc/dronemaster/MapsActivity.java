@@ -83,7 +83,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //    private String droneRequestedID;
     private MarkerOptions droneMarker;
     private Handler droneHandler = new Handler();
-    private static final long DRONE_POSITION_INTERVAL = 2000;
+    private static final long DRONE_POSITION_INTERVAL = 1000;
 
 
     /* Location variables */
@@ -537,6 +537,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
                             droneHandler.postDelayed(getDroneLocation,DRONE_POSITION_INTERVAL);
+                            btnRequest.setEnabled(false);
                         }
                     });
             alertDialog.show();
@@ -578,7 +579,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mMap.addMarker(droneMarker);
             }else if(resultCode == -2){
                 mMap.clear();
-                Toast.makeText(this, "The packaged was delivered!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "The package was delivered!", Toast.LENGTH_LONG).show();
+                btnRequest.setEnabled(true);
                 orderDelivered = true;
             }
         } catch (JSONException e) {

@@ -105,9 +105,6 @@ public class ServerAccess extends AsyncTask<String,String,String> {
     @Override
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
-        if(result.isEmpty()){
-            Toast.makeText(mContext, "result fudido", Toast.LENGTH_SHORT).show();
-        }
         JSONObject jsonResult = null;
         try {
             jsonResult = new JSONObject(result);
