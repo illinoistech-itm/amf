@@ -42,14 +42,17 @@ public class ServerAccess extends AsyncTask<String,String,String> {
     protected String doInBackground(String... params) {
         String jsonResponse = null;
         String jsonData = params[0];
-        String ipAddress = "";
-        Log.e(TAG,params.toString());
+        String ipAddress = params[1];
         HttpURLConnection connection = null;
         BufferedReader reader = null;
         /*Server URL*/
         URL url = null;
             try{
-                url = new URL(mContext.getString(R.string.server_post_url));
+                if(ipAddress.isEmpty())
+                    url = new URL(mContext.getString(R.string.server_post_url));
+                else
+                    url = new URL("http://"+ipAddress+":8080");
+                Log.i(TAG,"Request sent to: "+ url.toString());
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setReadTimeout( 10000 /*milliseconds*/ );
                 connection.setConnectTimeout( 10000 /* milliseconds */ );
@@ -63,7 +66,7 @@ public class ServerAccess extends AsyncTask<String,String,String> {
                 writer.write(jsonData);
                 writer.close();
 
-                Log.i("JsonData",jsonData);
+                Log.i("JsonDataSent",jsonData);
 
                 //Receives the response
                 InputStream inputStream = connection.getInputStream();
