@@ -2,6 +2,7 @@ package com.example.kaeuc.dronemaster;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -22,10 +23,12 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -80,7 +83,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //    private String droneRequestedID;
     private MarkerOptions droneMarker;
     private Handler droneHandler = new Handler();
-    private static final long DRONE_POSITION_INTERVAL = 3000;
+    private static final long DRONE_POSITION_INTERVAL = 2000;
 
 
     /* Location variables */
@@ -117,6 +120,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     // Unique instance ID. Maybe can change for a user ID in the future */
     private String instanceAppID = UUID.randomUUID().toString();
+    private String ipAddress = "";
 
 
     // Inner class responsible to receive the results of the geofence intent
@@ -247,14 +251,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
-            case R.id.settings:
-
+            case (R.id.action_settings):
+                showInputDialog();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
-
-
     }
+
 
     /*
     *   ACTIVITY METHODS END
@@ -584,7 +588,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void sendRequestInfo(double lat, double lon, String address, String instanceId, String reqId){
         JSONObject locationObj = new JSONObject();
-        final String httpMethod = "POST";
         try{
             locationObj.put(getString(R.string.instance_id),instanceId);
             locationObj.put(getString(R.string.request_id),reqId);
@@ -596,7 +599,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         if (locationObj.length() > 0){
-            new ServerAccess(this).execute(httpMethod,String.valueOf(locationObj));
+            new ServerAccess(this).execute(String.valueOf(locationObj),ipAddress);
         }
     }
 
@@ -640,4 +643,38 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 instanceAppID,
                 createRequestID());
     }
+
+
+
+    protected void showInputDialog() {
+
+        // get prompts.xml view
+        LayoutInflater layoutInflater = LayoutInflater.from(this);
+        View promptView = layoutInflater.inflate(R.layout.input_dialog, null);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setView(promptView);
+
+        final EditText editText = (EditText) promptView.findViewById(R.id.edt_ipAddress);
+        // setup a dialog window
+        alertDialogBuilder.setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        ipAddress = ""+ editText.getText();
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+        // create an alert dialog
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.show();
+    }
+
+
+
 }
