@@ -6,8 +6,10 @@ from fleet import Fleet
 import simplejson
 import threading
 import urlparse
+import ports
 
 fleet = Fleet(['tcp:127.0.0.1:5760'])
+# fleet = Fleet(ports.serial_ports())
 fleet_lock = threading.Lock()
 app_dict = {}
 dict_lock = threading.Lock()
