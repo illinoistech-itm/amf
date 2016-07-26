@@ -7,7 +7,7 @@ import simplejson
 import threading
 import urlparse
 
-fleet = Fleet(["com7", "com23"])
+fleet = Fleet(['tcp:127.0.0.1:5760'])
 fleet_lock = threading.Lock()
 app_dict = {}
 dict_lock = threading.Lock()
@@ -54,7 +54,7 @@ class Handler(BaseHTTPRequestHandler):
             if not fleet.mission_ended(droneid):
                 lat, lon = fleet.get_location(droneid)
 
-                fleet.log_status()
+                fleet.log_status(droneid)
                 response = {
                     "METHOD": "GET",
                     "RESPONSE": 200,
