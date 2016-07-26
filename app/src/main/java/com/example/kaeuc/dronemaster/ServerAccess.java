@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,18 +42,14 @@ public class ServerAccess extends AsyncTask<String,String,String> {
     protected String doInBackground(String... params) {
         String jsonResponse = null;
         String jsonData = params[0];
-        String ipAddress = params[1];
+        String ipAddress = "";
+        Log.e(TAG,params.toString());
         HttpURLConnection connection = null;
         BufferedReader reader = null;
         /*Server URL*/
         URL url = null;
             try{
-                if(ipAddress.isEmpty())
-                    url = new URL(mContext.getString(R.string.server_post_url));
-                else
-                    url = new URL(ipAddress);
-
-                Log.wtf(TAG,ipAddress);
+                url = new URL(mContext.getString(R.string.server_post_url));
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setReadTimeout( 10000 /*milliseconds*/ );
                 connection.setConnectTimeout( 10000 /* milliseconds */ );
@@ -108,6 +105,9 @@ public class ServerAccess extends AsyncTask<String,String,String> {
     @Override
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
+        if(result.isEmpty()){
+            Toast.makeText(mContext, "result fudido", Toast.LENGTH_SHORT).show();
+        }
         JSONObject jsonResult = null;
         try {
             jsonResult = new JSONObject(result);

@@ -250,12 +250,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Toast.makeText(this, "aqui0", Toast.LENGTH_SHORT).show();
         switch (item.getItemId()){
-            case (R.id.action_settings):
+            case (R.id.action_settings): {
+                Toast.makeText(this, "aqui", Toast.LENGTH_SHORT).show();
                 showInputDialog();
                 return true;
-            default:
+            }
+            default: {
+                Toast.makeText(this, "aqui 2", Toast.LENGTH_SHORT).show();
                 return super.onOptionsItemSelected(item);
+            }
         }
     }
 
@@ -599,7 +604,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         if (locationObj.length() > 0){
-            new ServerAccess(this).execute(String.valueOf(locationObj),ipAddress);
+            new ServerAccess(this).execute(String.valueOf(locationObj));
         }
     }
 
@@ -660,7 +665,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         ipAddress = ""+ editText.getText();
-                        dialog.dismiss();
+
                     }
                 })
                 .setNegativeButton("Cancel",
