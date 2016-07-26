@@ -56,6 +56,8 @@ class Drone():
         self.cmds.wait_ready()
 
     def begin_mission(self):
+        self.mission_ended_aux = False
+        self.mission_ended_bool = False
         self.vehicle.mode = dronekit.VehicleMode("AUTO")
         self.download_mission()
 
@@ -189,12 +191,11 @@ class Drone():
     def check_mission_ended(self):
         if self.cmds.next > 1:
             self.mission_ended_aux = True
-            self.mission_ended_bool = False
+            # self.mission_ended_bool = False
         elif self.cmds.next == 1 and self.mission_ended_aux:
-            self.mission_ended_aux = False
             self.mission_ended_bool = True
-        elif self.cmds.next == 1 and not self.mission_ended_aux:
-            self.mission_ended_bool = False
+        # elif self.cmds.next == 1 and not self.mission_ended_aux:
+        #     self.mission_ended_bool = False
 
     def mission_ended(self):
         return self.mission_ended_bool
@@ -225,6 +226,8 @@ class Drone():
         print("## mode changed: {}".format(mode.name), file=self.output)
 
     def log_status(self):
+        current_command = self.cmds[self.cmds.next-1].command
+
         print("{current} / {total}: {command} ".format(current=self.cmds.next,
                     total=self.cmds.count, command=commands_dict[current_command]), end="", file=self.output)
 
