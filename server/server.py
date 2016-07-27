@@ -6,8 +6,10 @@ from fleet import Fleet
 import simplejson
 import threading
 import urlparse
+import ports
 
 fleet = Fleet(['tcp:127.0.0.1:5760'])
+# fleet = Fleet(ports.serial_ports())
 fleet_lock = threading.Lock()
 app_dict = {}
 dict_lock = threading.Lock()
@@ -31,12 +33,11 @@ class Handler(BaseHTTPRequestHandler):
         # self.end_headers()
         parsed_path = urlparse.urlparse(self.path)
         instanceID = urlparse.parse_qs(parsed_path.query)['instanceID'][0]
-
         if instanceID not in app_dict:
-            # response = "-1"
             response = {
                 "METHOD": "GET",
                 "RESPONSE": -1,
+                "DESCRIPTION": "instanceID not in dictionary",
                 "LATITUDE": 0,
                 "LONGITUDE": 0
             }
@@ -44,12 +45,13 @@ class Handler(BaseHTTPRequestHandler):
             response = {
                 "METHOD": "GET",
                 "RESPONSE": -3,
+                "DESCRIPTION": "connecting to drone",
                 "LATITUDE": 0,
                 "LONGITUDE": 0
             }
         else:
             droneid = app_dict[instanceID][0]
-            # message = "{}, {}".format(lat, lon)
+
             print("mission ended: {}".format(fleet.mission_ended(droneid)))
             if not fleet.mission_ended(droneid):
                 lat, lon = fleet.get_location(droneid)
@@ -58,14 +60,15 @@ class Handler(BaseHTTPRequestHandler):
                 response = {
                     "METHOD": "GET",
                     "RESPONSE": 200,
+                    "DESCRIPTION": "mision underway, returning location",
                     "LATITUDE": lat,
                     "LONGITUDE": lon
                 }
             else:
-                # response = "-2"
                 response = {
                     "METHOD": "GET",
                     "RESPONSE": -2,
+                    "DESCRIPTION": "mission finished",
                     "LATITUDE": 0,
                     "LONGITUDE": 0
                 }
@@ -112,6 +115,7 @@ class Handler(BaseHTTPRequestHandler):
             response = {
                 "METHOD": "POST",
                 "RESPONSE": 200,
+                "DESCRIPTION": "drone available",
                 "ADDRESS": data['address']
             }
 
@@ -121,6 +125,7 @@ class Handler(BaseHTTPRequestHandler):
             response = {
                 "METHOD": "POST",
                 "RESPONSE": -1,
+                "DESCRIPTION": "all drones busy",
                 "ADDRESS": data['address']
             }
 

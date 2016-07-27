@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,9 +51,8 @@ public class ServerAccess extends AsyncTask<String,String,String> {
                 if(ipAddress.isEmpty())
                     url = new URL(mContext.getString(R.string.server_post_url));
                 else
-                    url = new URL(ipAddress);
-
-                Log.wtf(TAG,ipAddress);
+                    url = new URL("http://"+ipAddress+":8080");
+                Log.i(TAG,"Request sent to: "+ url.toString());
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setReadTimeout( 10000 /*milliseconds*/ );
                 connection.setConnectTimeout( 10000 /* milliseconds */ );
@@ -66,7 +66,7 @@ public class ServerAccess extends AsyncTask<String,String,String> {
                 writer.write(jsonData);
                 writer.close();
 
-                Log.i("JsonData",jsonData);
+                Log.i("JsonDataSent",jsonData);
 
                 //Receives the response
                 InputStream inputStream = connection.getInputStream();

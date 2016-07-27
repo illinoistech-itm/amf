@@ -37,12 +37,10 @@ public class DroneLocation extends AsyncTask<String,Void,String> {
         HttpURLConnection connection = null;
         String appID = params[0];
         String query = "";
-//        String droneID = params[0];
             try{
                 query = String.format("instanceID=%s",
-                        /*URLEncoder.encode(droneID,"UTF-8"),*/
                         URLEncoder.encode(appID,"UTF-8"));
-                URL url = new URL(parentContext.getString(R.string.server_get_url) +"?"+ query);
+                URL url = new URL("http://104.194.106.230:8080" +"?"+ query);
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestProperty("Accept-Charset","UTF-8");
                 // Get Response

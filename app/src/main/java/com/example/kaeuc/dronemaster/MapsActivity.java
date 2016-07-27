@@ -83,7 +83,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //    private String droneRequestedID;
     private MarkerOptions droneMarker;
     private Handler droneHandler = new Handler();
-    private static final long DRONE_POSITION_INTERVAL = 2000;
+    private static final long DRONE_POSITION_INTERVAL = 1000;
 
 
     /* Location variables */
@@ -251,11 +251,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
-            case (R.id.action_settings):
+            case (R.id.action_settings): {
                 showInputDialog();
                 return true;
-            default:
+            }
+            default: {
                 return super.onOptionsItemSelected(item);
+            }
         }
     }
 
@@ -532,6 +534,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
                             droneHandler.postDelayed(getDroneLocation,DRONE_POSITION_INTERVAL);
+                            btnRequest.setEnabled(false);
                         }
                     });
             alertDialog.show();
@@ -573,7 +576,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mMap.addMarker(droneMarker);
             }else if(resultCode == -2){
                 mMap.clear();
-                Toast.makeText(this, "The packaged was delivered!", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "The package was delivered!", Toast.LENGTH_LONG).show();
+                btnRequest.setEnabled(true);
                 orderDelivered = true;
             }
         } catch (JSONException e) {
@@ -599,6 +603,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         if (locationObj.length() > 0){
+            Toast.makeText(this, ipAddress, Toast.LENGTH_SHORT).show();
             new ServerAccess(this).execute(String.valueOf(locationObj),ipAddress);
         }
     }
@@ -660,7 +665,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         ipAddress = ""+ editText.getText();
-                        dialog.dismiss();
+                        Toast.makeText(MapsActivity.this, "IP Address: "+ipAddress + " saved.", Toast.LENGTH_LONG).show();
+
                     }
                 })
                 .setNegativeButton("Cancel",
