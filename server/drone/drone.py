@@ -5,6 +5,15 @@ import time
 import frame_conversion
 import sys
 
+"""
+Important links for resources:
+
+http://ardupilot.org/copter/docs/common-mavlink-mission-command-messages-mav_cmd.html
+http://ardupilot.org/planner/docs/common-mavlink-mission-command-messages-mav_cmd.html
+
+http://python.dronekit.io/automodule.html
+http://python.dronekit.io/about/index.html
+"""
 
 commands_dict = { mavutil.mavlink.MAV_CMD_NAV_TAKEOFF: "taking off",
                   mavutil.mavlink.MAV_CMD_NAV_WAYPOINT: "flying to waypoint",
