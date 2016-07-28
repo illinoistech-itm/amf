@@ -36,11 +36,16 @@ public class DroneLocation extends AsyncTask<String,Void,String> {
         String jsonResponse = null;
         HttpURLConnection connection = null;
         String appID = params[0];
+        String ipAddress = params[1];
         String query = "";
+        URL url;
             try{
                 query = String.format("instanceID=%s",
                         URLEncoder.encode(appID,"UTF-8"));
-                URL url = new URL("http://104.194.106.230:8080" +"?"+ query);
+                if(ipAddress.isEmpty())
+                    url = new URL(parentContext.getString(R.string.server_post_url));
+                else
+                    url = new URL("http://"+ipAddress+":8080?"+query);
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestProperty("Accept-Charset","UTF-8");
                 // Get Response

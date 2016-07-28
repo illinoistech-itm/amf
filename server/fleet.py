@@ -20,7 +20,7 @@ class Fleet():
             if self.drone_list[i][0] == None:
                 fo = open("logs/{:%Y-%m-%d..%H.%M.%S}..{}.txt".format(datetime.datetime.now(),i), "w")
                 self.drone_list[i][2] = fo
-                self.drone_list[i][0] = drone.Drone(self.drone_list[i][1], lat, lon, altitude=10, output=fo)
+                self.drone_list[i][0] = drone.Drone(self.drone_list[i][1], lat, lon, altitude=10 + i*5, output=fo)
                 return i
 
         return -1

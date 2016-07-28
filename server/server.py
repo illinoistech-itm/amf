@@ -8,8 +8,10 @@ import threading
 import urlparse
 import ports
 
-fleet = Fleet(['tcp:127.0.0.1:5760'])
-# fleet = Fleet(ports.serial_ports())
+# fleet = Fleet(['tcp:127.0.0.1:5760'])
+port_list = ports.serial_ports()
+print (port_list)
+fleet = Fleet(port_list)
 fleet_lock = threading.Lock()
 app_dict = {}
 dict_lock = threading.Lock()
@@ -26,6 +28,9 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(200)
         # self.send_header('Content-type', 'text/html')
         self.end_headers()
+
+    def log_message(self, format, *args):
+        return
 
     def do_GET(self):
         # self.send_response(200)

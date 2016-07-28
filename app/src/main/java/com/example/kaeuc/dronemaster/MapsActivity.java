@@ -147,7 +147,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void run() {
             if(!orderDelivered) {
-                new DroneLocation(MapsActivity.this).execute(instanceAppID);
+                new DroneLocation(MapsActivity.this).execute(instanceAppID,ipAddress);
                 droneHandler.postDelayed(this, DRONE_POSITION_INTERVAL);
             }
         }
@@ -603,7 +603,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         if (locationObj.length() > 0){
-            Toast.makeText(this, ipAddress, Toast.LENGTH_SHORT).show();
             new ServerAccess(this).execute(String.valueOf(locationObj),ipAddress);
         }
     }
