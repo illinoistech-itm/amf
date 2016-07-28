@@ -8,15 +8,27 @@ import threading
 import urlparse
 import ports
 
-# fleet = Fleet(['tcp:127.0.0.1:5760'])
+"""
+This threading server was implemented based on:
+https://pymotw.com/2/BaseHTTPServer/index.html#module-BaseHTTPServer
+"""
+
+
 port_list = ports.serial_ports()
 print (port_list)
 fleet = Fleet(port_list)
 fleet_lock = threading.Lock()
+
+#app_dict entry format: {"instanceID" : [droneID, running_bool]}
 app_dict = {}
 dict_lock = threading.Lock()
 
 def connect_and_run(instanceID):
+    """
+    Function to connect and run the drone.
+    Sets the drone as running at the end.
+    Created to be ran on a new thread so POST response isn't blocked.
+    """
     droneid = app_dict[instanceID][0]
     fleet.connect(droneid)
     fleet.run(droneid)
@@ -26,18 +38,25 @@ class Handler(BaseHTTPRequestHandler):
 
     def _set_headers(self):
         self.send_response(200)
-        # self.send_header('Content-type', 'text/html')
         self.end_headers()
 
     def log_message(self, format, *args):
+        """
+        Prevents console from being flooded with the accepted GETs.
+        """
         return
 
     def do_GET(self):
-        # self.send_response(200)
+        """
+        GET request handler.
+        """
         self._set_headers()
-        # self.end_headers()
+
+        # get instanceID from url
         parsed_path = urlparse.urlparse(self.path)
         instanceID = urlparse.parse_qs(parsed_path.query)['instanceID'][0]
+
+        #check instanceID is associated with a drone
         if instanceID not in app_dict:
             response = {
                 "METHOD": "GET",
@@ -46,6 +65,7 @@ class Handler(BaseHTTPRequestHandler):
                 "LATITUDE": 0,
                 "LONGITUDE": 0
             }
+        #check if the drone is running. If it is still connecting, you can't get its location
         elif not app_dict[instanceID][1]:
             response = {
                 "METHOD": "GET",
@@ -57,7 +77,7 @@ class Handler(BaseHTTPRequestHandler):
         else:
             droneid = app_dict[instanceID][0]
 
-            print("mission ended: {}".format(fleet.mission_ended(droneid)))
+            #check for mission end
             if not fleet.mission_ended(droneid):
                 lat, lon = fleet.get_location(droneid)
 
@@ -91,12 +111,12 @@ class Handler(BaseHTTPRequestHandler):
         return
 
     def do_POST(self):
+        """
+        POST request handler.
+        """
         self._set_headers()
         print "@@@@@ start POST"
         self.data_string = self.rfile.read(int(self.headers['Content-Length']))
-
-        # self.send_response(200)
-        # self.end_headers()
 
         data = simplejson.loads(self.data_string)
 
@@ -108,8 +128,7 @@ class Handler(BaseHTTPRequestHandler):
         droneid = fleet.request(lat, lon)
         fleet_lock.release()
 
-        # droneid = fleet.requestSITL(lat, lon)
-        # droneid = -1
+        #check if there is a drone available
         if droneid is not -1:
             appID = data['instanceID']
 
@@ -148,8 +167,7 @@ if __name__ == '__main__':
         port = int(sys.argv[1])
     else:
         port = 8080
-    # server = ThreadedHTTPServer(('localhost', port), Handler)
-    # server = ThreadedHTTPServer(('104.194.103.165', port), Handler)
+    #server created on current IP
     server = ThreadedHTTPServer(('', port), Handler)
     print 'Starting server, use <Ctrl-C> to stop'
     server.serve_forever()
