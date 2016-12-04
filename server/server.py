@@ -7,12 +7,15 @@ import simplejson
 import threading
 import urlparse
 import ports
+import serial
+import time
+import sqlite3 as sqlite
+import re
 
 """
 This threading server was implemented based on:
 https://pymotw.com/2/BaseHTTPServer/index.html#module-BaseHTTPServer
 """
-
 
 port_list = ports.serial_ports()
 print (port_list)
@@ -45,6 +48,7 @@ class Handler(BaseHTTPRequestHandler):
         Prevents console from being flooded with the accepted GETs.
         """
         return
+
 
     def do_GET(self):
         """
@@ -111,6 +115,72 @@ class Handler(BaseHTTPRequestHandler):
         return
 
     def do_POST(self):
+
+        #Select a ranndom drone from the database
+        con = sqlite.connect('database/db.sqlite')
+        cur = con.cursor()
+        cur.execute('SELECT * FROM drones WHERE available = 1 ORDER BY RANDOM() LIMIT 1')
+        selected_drone = cur.fetchone()
+
+        #Open a serial communication
+        ser = serial.Serial()
+        ser.port = port_list[0]
+        ser.timeout = 0
+        ser.baudrate = 57600
+        ser.open();
+
+        #Enter command mode for programming the 3DR Antenna
+        ser.flushOutput()
+        ser.flushInput()
+        time.sleep(1)  # give the flush a second
+        command = "\r\n"  # the ATO command must start on a newline
+        ser.write(command)
+        time.sleep(0.5)
+        command = "ATO\r\n"  # exit AT command mode if we are in it
+        ser.write(command)
+        time.sleep(1)
+        command = "ATI\r\n"  # test to see if we are stuck in AT command mode.  If so, we see a response from this.
+        time.sleep(2)  # minimum 1 second wait needed before +++
+        command = "+++"  # +++ enters AT command mode
+        ser.write(command)
+        time.sleep(5)  # minimum 1 second wait after +++
+        inBuffer = ser.inWaiting()
+        response = ""
+        while inBuffer > 0:
+            response = response + ser.readline(inBuffer)
+            time.sleep(1)
+            inBuffer = ser.inWaiting()
+
+        #Reset the NetID to connect to the right drone
+        print("Connected to 3DR Antenna on Serial Port:", ser.portstr)
+        #Flush serial input / output
+        ser.flushOutput()
+        ser.flushInput()
+        #Set the NETID to the desired one
+        print("Selected drone: %s - Setting NedID to %s") % (selected_drone[1], selected_drone[2])
+        command = "%sS3=%d\r\n" % ('AT', selected_drone[2])
+        print(command)
+        ser.flushOutput()
+        ser.flushInput()
+        ser.write(command)
+        time.sleep(2)
+        inBuffer = ser.inWaiting()
+        response = ""
+        while inBuffer > 0:
+            response = response + ser.readline(inBuffer)
+            time.sleep(1)
+            inBuffer = ser.inWaiting()
+
+
+        # write to EEPROM and reboot
+        command = "%s&W\r\n" % 'AT'
+        ser.write(command)
+        time.sleep(2)
+        command = "%sZ\r\n" % 'AT'
+        ser.write(command)
+        ser.close()
+
+        print(response)
         """
         POST request handler.
         """
@@ -157,7 +227,13 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(response)
         self.wfile.write('\n')
         print "@@@@@ end POST"
+
+        #Update drone table to mark the used drone as not available anymore
+        cur.execute("UPDATE drones SET available=0 WHERE id=?", (selected_drone[0], ))
+        con.commit()
         return
+
+
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """Handle requests in a separate thread."""

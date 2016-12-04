@@ -1,5 +1,6 @@
 from drone import drone
 import datetime
+import os
 
 
 class Fleet():
@@ -18,7 +19,9 @@ class Fleet():
         """
         for i in range(len(self.drone_list)):
             if self.drone_list[i][0] == None:
-                fo = open("logs/{:%Y-%m-%d..%H.%M.%S}..{}.txt".format(datetime.datetime.now(),i), "w")
+                fo = open(os.getcwd() + "/logs/{:%Y-%m-%d..%H.%M.%S}..{}.txt".format(datetime.datetime.now(),i), "w+")
+                #fo = open("D:/amf/{:%Y-%m-%d..%H.%M.%S}..{}.txt".format(datetime.datetime.now(),i), "w")
+            
                 self.drone_list[i][2] = fo
                 self.drone_list[i][0] = drone.Drone(self.drone_list[i][1], lat, lon, altitude=10 + i*5, output=fo)
                 return i
@@ -28,7 +31,9 @@ class Fleet():
     def requestSITL(self, lat, lon):
         for i in range(len(self.drone_list)):
             if self.drone_list[i][0] == None:
-                fo = open("logs/{:%Y-%m-%d..%H.%M.%S}..{}.txt".format(datetime.datetime.now(),i), "w")
+                fo = open(os.getcwd() + "/logs/{:%Y-%m-%d..%H.%M.%S}..{}.txt".format(datetime.datetime.now(),i), "w+")
+                #fo = open("D:/amf/{:%Y-%m-%d..%H.%M.%S}..{}.txt".format(datetime.datetime.now(),i), "w")
+            
                 self.drone_list[i][2] = fo
                 start_lat = 41.833474
                 start_lon = -87.626819

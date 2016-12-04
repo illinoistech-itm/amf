@@ -190,7 +190,7 @@ class Drone():
         """
         Default operation order.
         """
-        self.show_battery()
+        #self.show_battery()
         print("Clearing mission", file=self.output)
         self.clear_mission()
         print("Preparing mission", file=self.output)

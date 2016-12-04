@@ -1,5 +1,6 @@
 import sys
 import serial
+import glob
 
 def serial_ports():
     """ Lists serial port names
