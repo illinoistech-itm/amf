@@ -1,0 +1,2 @@
+Drone target: 41.834184, -87.627065
+Connecting to vehicle on: /dev/ttyUSB0
