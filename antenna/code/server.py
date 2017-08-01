@@ -11,11 +11,18 @@ import serial
 import time
 import sqlite3 as sqlite
 import re
+import requests
+import json
 
 """
 This threading server was implemented based on:
 https://pymotw.com/2/BaseHTTPServer/index.html#module-BaseHTTPServer
 """
+
+
+API_ENDPOINT ="http://13.59.155.171/drone/1"
+API_KEY = "cc4673bb6f9cd137f642d15ae87fb8f7"
+
 
 port_list = ports.serial_ports()
 print (port_list)
@@ -156,6 +163,9 @@ class Handler(BaseHTTPRequestHandler):
         #Flush serial input / output
         ser.flushOutput()
         ser.flushInput()
+
+        self.drone_name = selected_drone[1]
+        self.netid = selected_drone[2]
         #Set the NETID to the desired one
         print("Selected drone: %s - Setting NedID to %s") % (selected_drone[1], selected_drone[2])
         command = "%sS3=%d\r\n" % ('AT', selected_drone[2])
@@ -193,6 +203,19 @@ class Handler(BaseHTTPRequestHandler):
         print "{}".format(data)
         lat = data['latitude']
         lon = data['longitude']
+
+
+        """
+        Send order coordinates to database
+        """
+
+       
+        flight_data = {'Drone': '{}'.format(selected_drone[1]), 'NetID': '{}'.format(selected_drone[2]), 'Latitude': '{}'.format(lat), 'Longitude': '{}'.format(lon)}
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        r = requests.post(url = API_ENDPOINT, data = json.dumps(flight_data), headers=headers)
+        server_url = r.text
+        print("The pastebin URL is:%s"%server_url)
+        
 
         fleet_lock.acquire()
         droneid = fleet.request(lat, lon)
