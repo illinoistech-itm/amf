@@ -49,7 +49,7 @@ class Fleet():
     def connect(self, id):
         """Connects to drone with id."""
         self.drone_list[id][0].connect()
-        # print "!!!!!!!!!! connecting to drone :: {}".format(id)
+        print "!!!!!!!!!! connecting to drone :: {}".format(id)
         # import time
         # while True:
         #   time.sleep(1)
