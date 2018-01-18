@@ -113,18 +113,19 @@ public class FetchAddressIntentService extends IntentService {
             deliverResultToReceiver(Constants.FAILURE_RESULT, errorMessage);
         } else {
             Address address = addresses.get(0);
-            ArrayList<String> addressFragments = new ArrayList<String>();
+            //ArrayList<String> addressFragments = new ArrayList<String>();
+            String longAddress = address.getAddressLine(0);
 
             // Fetch the address lines using {@code getAddressLine},
             // join them, and send them to the thread. The {@link android.location.address}
             // class provides other options for fetching address details that you may prefer
             // to use.
-            for(int i = 0; i < address.getMaxAddressLineIndex() -1; i++) {
+            /* for(int i = 0; i < address.getMaxAddressLineIndex() -1; i++) {
                 addressFragments.add(address.getAddressLine(i));
             }
-
             deliverResultToReceiver(Constants.SUCCESS_RESULT,
-                    TextUtils.join(System.getProperty("line.separator"), addressFragments));
+                    TextUtils.join(System.getProperty("line.separator"), addressFragments));*/
+            deliverResultToReceiver(Constants.SUCCESS_RESULT, longAddress);
         }
     }
 
