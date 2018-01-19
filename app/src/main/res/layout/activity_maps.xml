@@ -23,7 +23,7 @@
         android:layout_marginTop="?attr/actionBarSize"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="491dp"
+        android:layout_height="wrap_content"
         tools:context="com.example.kaeuc.dronemaster.MapsActivity" />
 
 
@@ -31,7 +31,6 @@
     <ImageView
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginBottom="20dp"
         android:layout_gravity="center"
         android:src="@drawable/map_marker"
            />

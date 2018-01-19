@@ -11,7 +11,7 @@ import android.os.Bundle;
 public class LocationDialog extends DialogFragment {
 
     public interface ConfirmDialogListener {
-        public void onDialogPositiveClick(DialogFragment dialog);
+        void onDialogPositiveClick(DialogFragment dialog);
 //        public void onDialogNegativeClick(DialogFragment dialog);
     }
 
@@ -36,6 +36,13 @@ public class LocationDialog extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialogListener.onDialogPositiveClick(LocationDialog.this);
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //builder.setOnCancelListener(dialog);
+                        dialog.dismiss();
                     }
                 });
 

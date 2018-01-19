@@ -28,6 +28,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -109,6 +110,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     private Button btnRequest;
     private TextView txtAddress;
+    private CheckBox checkOne;
+    private CheckBox checkTwo;
     private Toolbar toolbar;
 
 
@@ -170,6 +173,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         
         
         //  Find UI Widgets
+        checkOne = (CheckBox) findViewById(R.id.cb_one);
+        checkTwo = (CheckBox) findViewById(R.id.cb_two);
         btnRequest = (Button) findViewById(R.id.btn_request);
         txtAddress = (TextView) findViewById(R.id.txt_address);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -646,6 +651,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mAddressOutput,
                 instanceAppID,
                 createRequestID());
+        sendRequestDroneInfo();
+    }
+
+    /* These two checkboxes are for calling different type of drones. (ex Checkbox 1 calls type 1 drones)
+    * This method is for sending information that which checkbox is checked or not.
+    * There is no string variable which is receiving checkbox information in , so placed "drone type two/one" instead.
+    * Needs to be fixed.
+    * */
+    public void sendRequestDroneInfo() {
+        JSONObject droneObj = new JSONObject();
+        try {
+            droneObj.put("drone type one", checkOne.isChecked());
+            droneObj.put("drone type two", checkTwo.isChecked());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        if (droneObj.length() > 0) {
+            new ServerAccess(this).execute(String.valueOf(droneObj), ipAddress);
+        }
     }
 
 
