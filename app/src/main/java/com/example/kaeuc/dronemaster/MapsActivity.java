@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -49,8 +51,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 import java.util.UUID;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
@@ -215,6 +219,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             //  TODO
             // Turn on gps dialog
                 Toast.makeText(this, "No GPS connection", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void onSearch (View view) {
+        EditText location_tr = (EditText)findViewById(R.id.edt_address);
+        String location = location_tr.getText().toString();
+        List<Address> addressList = null;
+
+        if(location != null || location.equals("")) {
+            Geocoder geocoder = new Geocoder(this);
+            try {
+                addressList = geocoder.getFromLocationName(location, 1);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Address address = addressList.get(0);
+            LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+            //mMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
         }
     }
 

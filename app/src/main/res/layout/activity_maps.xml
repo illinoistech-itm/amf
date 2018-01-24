@@ -42,6 +42,27 @@
         android:layout_gravity="bottom"
         android:background="@drawable/panel"
         >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <EditText
+                android:layout_width="287dp"
+                android:layout_height="wrap_content"
+                android:hint="Put address here.."
+                android:ems="10"
+                android:layout_weight="1"
+                android:id="@+id/edt_address"/>
+
+            <Button
+                android:id="@+id/btn_address"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="onSearch"
+                android:text="Search" />
+        </LinearLayout>
+        
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
