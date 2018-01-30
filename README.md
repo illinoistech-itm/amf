@@ -53,7 +53,37 @@ This will install the app on your phone and open it when it's ready. It will ask
 
 This step is required every time you make changes on your app, since your mobile device needs to be updated to the latest build.
 
-## Running the tests
+## How to deploy server: on Windows and Ubuntu
+
+The easiest way to deploy the server on Windows is to use WinPython 2.7. You can download it [here](https://sourceforge.net/projects/winpython/files/WinPython_2.7/).
+With Ubuntu, if it is not already done, you will need to install the program pip. You can do it with the following command:
+
+```
+sudo apt install python-pip
+
+```
+
+Then, in both cases , you will need to follow these instructions: 
+
+Several packages are required to launch the server. Install them by using the following commands on WinPython or Ubuntu's terminal.
+
+```
+pip install dronekit
+pip install dronekit-sitl
+pip install serial
+pip install pyserial
+pip install simplejson
+pip install requests
+
+```
+Finally, you can launch the server by using the following command in the folder containing your server file:
+
+```
+~/amf/antenna/code python server.py
+```
+The command prompt should display the port where the antenna is connected (for example 'COM6') and say the server is started.
+
+## Running the tests (Old version)
 
 If you did the [Quick Start Tutorial](http://python.dronekit.io/guide/quick_start.html) on DroneKit's documentation you should have already installed and tested the tool for creating [simulated vehicles (SITL)](http://python.dronekit.io/develop/sitl_setup.html) on your computer. This is needed to test your algorithms on a fake simulated vehicle, instead of a real drone.
 
