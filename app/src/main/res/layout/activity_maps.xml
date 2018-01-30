@@ -47,6 +47,30 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <EditText
+                android:layout_width="144dp"
+                android:layout_height="wrap_content"
+                android:hint="latitude"
+                android:id="@+id/edt_latitude"
+                android:ems="10"/>
+            <EditText
+                android:layout_width="144dp"
+                android:layout_height="wrap_content"
+                android:hint="longitude"
+                android:id="@+id/edt_longitude"
+                android:ems="10"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SEARCH"
+                android:id="@+id/btn_location"
+                android:layout_weight="1"
+                android:onClick="onSearch2"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <EditText
                 android:layout_width="287dp"
                 android:layout_height="wrap_content"
                 android:hint="Put address here.."

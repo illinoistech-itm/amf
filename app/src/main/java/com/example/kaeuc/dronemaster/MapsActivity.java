@@ -222,6 +222,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    /*
+    * Move map camera with address
+    * */
+
     public void onSearch (View view) {
         EditText location_tr = (EditText)findViewById(R.id.edt_address);
         String location = location_tr.getText().toString();
@@ -239,6 +243,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             //mMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
             mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
         }
+    }
+
+    /*
+    * Move map camera with location
+    * */
+    public void onSearch2 (View vew) {
+        EditText latitude_tr = (EditText)findViewById(R.id.edt_latitude);
+        Double latitude_d = Double.parseDouble(latitude_tr.getText().toString());
+        EditText longitude_tr = (EditText)findViewById(R.id.edt_longitude);
+        Double longitude_d = Double.parseDouble(longitude_tr.getText().toString());
+        LatLng latLng = new LatLng(latitude_d, longitude_d);
+        //mMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
     }
 
     @Override
