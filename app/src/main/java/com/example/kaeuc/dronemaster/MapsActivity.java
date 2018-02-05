@@ -116,6 +116,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private TextView txtAddress;
     private CheckBox checkOne;
     private CheckBox checkTwo;
+    private Button btnEtc;
     private Toolbar toolbar;
 
 
@@ -179,6 +180,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //  Find UI Widgets
         checkOne = (CheckBox) findViewById(R.id.cb_one);
         checkTwo = (CheckBox) findViewById(R.id.cb_two);
+        btnEtc = (Button) findViewById(R.id.btn_ect);
         btnRequest = (Button) findViewById(R.id.btn_request);
         txtAddress = (TextView) findViewById(R.id.txt_address);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -220,6 +222,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // Turn on gps dialog
                 Toast.makeText(this, "No GPS connection", Toast.LENGTH_SHORT).show();
         }
+
+        btnEtc.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent myIntent = new Intent(MapsActivity.this, CheckActivity.class);
+                startActivity(myIntent);
+            }
+        });
     }
 
     /*
