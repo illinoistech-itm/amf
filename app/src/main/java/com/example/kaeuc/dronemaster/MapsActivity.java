@@ -232,42 +232,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    /*
-    * Move map camera with address
-    * */
-
-    public void onSearch (View view) {
-        EditText location_tr = (EditText)findViewById(R.id.edt_address);
-        String location = location_tr.getText().toString();
-        List<Address> addressList = null;
-
-        if(location != null || location.equals("")) {
-            Geocoder geocoder = new Geocoder(this);
-            try {
-                addressList = geocoder.getFromLocationName(location, 1);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Address address = addressList.get(0);
-            LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-            //mMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
-        }
-    }
-
-    /*
-    * Move map camera with location
-    * */
-    public void onSearch2 (View vew) {
-        EditText latitude_tr = (EditText)findViewById(R.id.edt_latitude);
-        Double latitude_d = Double.parseDouble(latitude_tr.getText().toString());
-        EditText longitude_tr = (EditText)findViewById(R.id.edt_longitude);
-        Double longitude_d = Double.parseDouble(longitude_tr.getText().toString());
-        LatLng latLng = new LatLng(latitude_d, longitude_d);
-        //mMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
-        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
-    }
-
     @Override
     protected void onStart() {
         if( mGoogleApiClient != null) {
@@ -308,6 +272,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         switch (item.getItemId()){
             case (R.id.action_settings): {
                 showInputDialog();
+                return true;
+            }
+            case (R.id.search_address): {
+                showSearchDialog();
                 return true;
             }
             default: {
@@ -754,6 +722,64 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         alert.show();
     }
 
+    protected void showSearchDialog() {
+        // get search_dialog.xml view
+        LayoutInflater layoutInflater = LayoutInflater.from(this);
+        View promptView = layoutInflater.inflate(R.layout.search_dialog, null);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setView(promptView);
 
+        final EditText edtAddress = (EditText) promptView.findViewById(R.id.edt_address);
+        final EditText edtLongitude = (EditText) promptView.findViewById(R.id.edt_longitude);
+        final EditText edtLatitude = (EditText) promptView.findViewById(R.id.edt_latitude);
 
+        Button btnAddress = (Button) promptView.findViewById(R.id.btn_address);
+        Button btnCoordinate = (Button) promptView.findViewById(R.id.btn_coordinate);
+
+        final Geocoder geocoder = new Geocoder(this);
+
+        btnAddress.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String location = edtAddress.getText().toString();
+                List<Address> addressList = null;
+
+                if(location != null || location.equals("")) {
+                    try {
+                        addressList = geocoder.getFromLocationName(location, 1);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Address address = addressList.get(0);
+                    LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+                    //mMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+                }
+            }
+        });
+
+        btnCoordinate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Double latitude_d = Double.parseDouble(edtLatitude.getText().toString());
+                Double longitude_d = Double.parseDouble(edtLongitude.getText().toString());
+                LatLng latLng = new LatLng(latitude_d, longitude_d);
+                //mMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+            }
+        });
+
+        // setup a dialog window
+        alertDialogBuilder.setCancelable(false)
+                .setNegativeButton("Close",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+        // create an alert dialog
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.show();
+    }
 }
