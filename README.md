@@ -130,5 +130,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-* Illinoin Institute of Technology/School of Applied Technology
+* Illinois Institute of Technology/School of Applied Technology
 * Capes (Coordenação de Aperfeiçoamento de Pessoal de Nível Superior)
