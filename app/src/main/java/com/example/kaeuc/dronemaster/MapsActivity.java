@@ -669,7 +669,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mAddressOutput,
                 instanceAppID,
                 createRequestID());
-        sendRequestDroneInfo();
+        sendRequestItemInfo();
     }
 
     /* These two checkboxes are for calling different type of drones. (ex Checkbox 1 calls type 1 drones)
@@ -677,7 +677,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     * There is no string variable which is receiving checkbox information in , so placed "drone type two/one" instead.
     * Needs to be fixed.
     * */
-    public void sendRequestDroneInfo() {
+    public void sendRequestItemInfo() {
         JSONObject droneObj = new JSONObject();
         try {
             droneObj.put("drone type one", checkOne.isChecked());
