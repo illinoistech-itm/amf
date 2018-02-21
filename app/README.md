@@ -119,5 +119,7 @@ Major program files in application project. (Except drawable, mipmap, values etc
 
 ## Authors
 
-* **Eun Ji Jun** - [GitHib:allisonej](https://github.com/allisonej)
-* **Hye Rim Kim** - [GitHub:hkim125](https://github.com/hkim125)
+* **Eun Ji Jun**
+ - [GitHib:allisonej](https://github.com/allisonej) (eunji3620@gmail.com)
+* **Hye Rim Kim**
+ - [GitHub:hkim125](https://github.com/hkim125) (zpooz1234@naver.com)
