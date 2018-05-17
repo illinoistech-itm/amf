@@ -25,7 +25,7 @@ git clone https://github.com/illinoistech-itm/amf.git
  3. Download SDK : Built device's android version should be between minSdkVersion and targetSdkVersion. It is written in `amf/build.gradle` (updated Jan,25,2018)
    - compileSdkVersion : 23
    - buildToolsVersion : 26.0.2
-   - minSdkVersion : 16
+   - minSdkVersion : 21
    - targetSdkVersion : 27
 
  4. Change Google Maps Android API key: [Get information and API key. ](https://developers.google.com/maps/documentation/android-api/)
