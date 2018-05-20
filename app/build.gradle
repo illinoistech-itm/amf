@@ -23,7 +23,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     //noinspection GradleCompatible
-    compile 'com.android.support:appcompat-v7:27..1'
+    compile 'com.android.support:appcompat-v7:27.1.1'
     compile 'com.google.android.gms:play-services:12.0.1'
     compile 'com.android.support.constraint:constraint-layout:1.1.0'
     testCompile 'junit:junit:4.12'
