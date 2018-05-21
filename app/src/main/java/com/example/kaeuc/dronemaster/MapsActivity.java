@@ -386,16 +386,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * updates.
      */
     protected void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
+        LocationRequest request = LocationRequest.create();
+       // mLocationRequest = new LocationRequest();
         // Sets the desired interval for active location updates. This interval is
         // inexact. You may not receive updates at all if no location sources are available, or
         // you may receive them slower than requested. You may also receive updates faster than
         // requested if other applications are requesting location at a faster interval.
-        mLocationRequest.setInterval(1000);
+        request.setInterval(1000);
+       // mLocationRequest.setInterval(1000);
         // Sets the fastest rate for active location updates. This interval is exact, and your
         // application will never receive updates faster than this value.
-        mLocationRequest.setFastestInterval(1000/2);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        request.setFastestInterval(1000/2);
+        //mLocationRequest.setFastestInterval(1000/2);
+        //mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
     /**
