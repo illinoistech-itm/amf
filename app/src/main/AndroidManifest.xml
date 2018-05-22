@@ -57,7 +57,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".CheckActivity" />
+        <!--<activity android:name=".CheckActivity" />-->
     </application>
 
 </manifest>

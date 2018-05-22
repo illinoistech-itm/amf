@@ -114,9 +114,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     private Button btnRequest;
     private TextView txtAddress;
-    private CheckBox checkOne;
+    /*private CheckBox checkOne;
     private CheckBox checkTwo;
-    private Button btnEtc;
+    private Button btnEtc;*///previous ui
+    private CheckBox battery;
+    private CheckBox blood_sample;
+    private CheckBox first_aid_kit;
+    private CheckBox flashlight;
+    private CheckBox food;
+    private CheckBox map;
+    private CheckBox radio;
+    private CheckBox tissue;
+    private CheckBox tool;
+    private CheckBox water;
     private Toolbar toolbar;
 
 
@@ -178,9 +188,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         
         
         //  Find UI Widgets
-        checkOne = (CheckBox) findViewById(R.id.cb_one);
+        /*checkOne = (CheckBox) findViewById(R.id.cb_one);
         checkTwo = (CheckBox) findViewById(R.id.cb_two);
-        btnEtc = (Button) findViewById(R.id.btn_ect);
+        btnEtc = (Button) findViewById(R.id.btn_ect);*///previous ui
+        battery = (CheckBox)findViewById(R.id.battery);
+        blood_sample = (CheckBox)findViewById(R.id.blood);
+        first_aid_kit = (CheckBox)findViewById(R.id.first_aid_kit);
+        flashlight = (CheckBox)findViewById(R.id.flashlight);
+        food = (CheckBox)findViewById(R.id.food);
+        map = (CheckBox)findViewById(R.id.i_map);
+        radio = (CheckBox)findViewById(R.id.radio);
+        tissue = (CheckBox)findViewById(R.id.tissue);
+        tool = (CheckBox)findViewById(R.id.tool);
+        water = (CheckBox)findViewById(R.id.water);
         btnRequest = (Button) findViewById(R.id.btn_request);
         txtAddress = (TextView) findViewById(R.id.txt_address);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -223,13 +243,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(this, "No GPS connection", Toast.LENGTH_SHORT).show();
         }
 
-        btnEtc.setOnClickListener(new View.OnClickListener() {
+        /*btnEtc.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent myIntent = new Intent(MapsActivity.this, CheckActivity.class);
                 startActivity(myIntent);
             }
-        });
+        });*///previous ui
     }
 
     @Override
@@ -684,8 +704,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void sendRequestItemInfo() {
         JSONObject droneObj = new JSONObject();
         try {
-            droneObj.put("drone type one", checkOne.isChecked());
-            droneObj.put("drone type two", checkTwo.isChecked());
+            /*droneObj.put("drone type one", checkOne.isChecked());
+            droneObj.put("drone type two", checkTwo.isChecked());*///previous ui
+            droneObj.put("drone type one",battery.isChecked());
+            droneObj.put("drone type two",blood_sample.isChecked());
+            droneObj.put("drone type three",first_aid_kit.isChecked());
+            droneObj.put("drone type four",flashlight.isChecked());
+            droneObj.put("drone type five",map.isChecked());
+            droneObj.put("drone type six",radio.isChecked());
+            droneObj.put("drone type seven",tissue.isChecked());
+            droneObj.put("drone type eight",tool.isChecked());
+            droneObj.put("drone type nine",water.isChecked());
+            droneObj.put("drone type ten",food.isChecked());
+
         } catch (JSONException e) {
             e.printStackTrace();
         }

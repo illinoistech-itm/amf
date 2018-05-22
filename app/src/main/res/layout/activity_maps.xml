@@ -53,37 +53,102 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:gravity = "center"
             android:orientation="horizontal">
 
-            <CheckBox
-                android:id="@+id/cb_one"
-                android:layout_width="wrap_content"
+            <HorizontalScrollView
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="1" />
+                android:layout_width="wrap_content"
+                android:scrollbars = "none">
 
-            <CheckBox
-                android:id="@+id/cb_two"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="2" />
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:id="@+id/btn_ect"
-                android:text="more"/>
+                        <CheckBox
+                            android:id="@+id/battery"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:button = "@drawable/battery_change" />
+
+                        <CheckBox
+                            android:id="@+id/blood"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:button = "@drawable/blood_sample_change" />
+
+                        <CheckBox
+                            android:id="@+id/first_aid_kit"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:button = "@drawable/first_aid_kit_change" />
+
+                        <CheckBox
+                            android:id="@+id/flashlight"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:button="@drawable/flashlight_change" />
+
+                        <CheckBox
+                            android:id="@+id/i_map"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:button = "@drawable/map_change" />
+
+                        <CheckBox
+                            android:id="@+id/radio"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:button = "@drawable/radio_change" />
+
+                        <CheckBox
+                            android:id="@+id/tissue"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:button = "@drawable/tissue_change" />
+
+                        <CheckBox
+                            android:id="@+id/tool"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:button = "@drawable/tool_change" />
+
+                        <CheckBox
+                            android:id="@+id/water"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:button = "@drawable/water_change" />
+
+                        <CheckBox
+                            android:id="@+id/food"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:button = "@drawable/food_change" />
+
+                    </LinearLayout>
+
+                <!--<Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:id="@+id/btn_ect"
+                    android:text="more"/>-->
+            </HorizontalScrollView>
         </LinearLayout>
 
         <Button
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
             android:id="@+id/btn_request"
             android:text="@string/request_text"
-            android:layout_gravity="bottom"
-            android:layout_marginTop="5dp" />
+            android:layout_gravity="bottom|right"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="5dp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/button_notibar_didit"
+            android:textSize="10sp"/>
 
     </LinearLayout>
 

@@ -1,3 +1,4 @@
+/*
 package com.example.kaeuc.dronemaster;
 
 
@@ -17,9 +18,10 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
+*
  * Created by Eun Ji Jun on 2018-01-31.
- */
+
+
 
 public class CheckActivity extends AppCompatActivity {
 
@@ -150,3 +152,4 @@ public class CheckActivity extends AppCompatActivity {
         return true;
     }
 }
+*/
