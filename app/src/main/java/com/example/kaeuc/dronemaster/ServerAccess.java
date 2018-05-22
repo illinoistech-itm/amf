@@ -48,8 +48,8 @@ public class ServerAccess extends AsyncTask<String,String,String> {
         /*Server URL*/
         URL url = null;
             try{
-                if(ipAddress.isEmpty())
-                    url = new URL(mContext.getString(R.string.server_post_url));
+                    if(ipAddress.isEmpty())
+                        url = new URL(mContext.getString(R.string.server_post_url));
                 else
                     url = new URL("http://"+ipAddress+":8080");
                 Log.i(TAG,"Request sent to: "+ url.toString());
