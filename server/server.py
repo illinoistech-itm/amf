@@ -53,8 +53,10 @@ class Handler(BaseHTTPRequestHandler):
         self._set_headers()
 
         # get instanceID from url
-        parsed_path = urlparse.urlparse(self.path)
+        parsed_path = urlparse.urlparse(self.path)#urlparse는 url을 파싱한 결과로 parseresult 인스턴스를 반환 path는 파일이나 애플리케이션 경로를 의미 http://ssola22.tistory.com/13 
         instanceID = urlparse.parse_qs(parsed_path.query)['instanceID'][0]
+        #parse_qs()는 쿼리 문자열을 해석하여 python 자료구조로 변환
+        #query는 질의 문자열로 &로 구분된 키=값 쌍 형식으로 표시됨
 
         #check instanceID is associated with a drone
         if instanceID not in app_dict:
@@ -115,12 +117,12 @@ class Handler(BaseHTTPRequestHandler):
         POST request handler.
         """
         self._set_headers()
-        print "@@@@@ start POST"
+        print ("@@@@@ start POST")
         self.data_string = self.rfile.read(int(self.headers['Content-Length']))
 
         data = simplejson.loads(self.data_string)
 
-        print "{}".format(data)
+        print ("{}").format(data)
         lat = data['latitude']
         lon = data['longitude']
 
@@ -156,7 +158,7 @@ class Handler(BaseHTTPRequestHandler):
 
         self.wfile.write(response)
         self.wfile.write('\n')
-        print "@@@@@ end POST"
+        print ("@@@@@ end POST")
         return
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
@@ -169,5 +171,5 @@ if __name__ == '__main__':
         port = 8080
     #server created on current IP
     server = ThreadedHTTPServer(('', port), Handler)
-    print 'Starting server, use <Ctrl-C> to stop'
+    print ('Starting server, use <Ctrl-C> to stop')
     server.serve_forever()

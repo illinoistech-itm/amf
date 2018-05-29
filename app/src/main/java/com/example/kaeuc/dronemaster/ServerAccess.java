@@ -30,7 +30,6 @@ public class ServerAccess extends AsyncTask<String,String,String> {
     private Context mContext;
 
 
-
     public ServerAccess(Context context){
         this.mContext = context;
         this.callBack = (ServerTaskResponse) context;
@@ -39,7 +38,7 @@ public class ServerAccess extends AsyncTask<String,String,String> {
 
 
     @Override
-    protected String doInBackground(String... params) {
+    protected String doInBackground(String ... params) {
         String jsonResponse = null;
         String jsonData = params[0];
         String ipAddress = params[1];
@@ -56,21 +55,27 @@ public class ServerAccess extends AsyncTask<String,String,String> {
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setReadTimeout( 10000 /*milliseconds*/ );
                 connection.setConnectTimeout( 10000 /* milliseconds */ );
+                connection.setRequestMethod("POST");
                 connection.setDoOutput(true);
                 connection.setRequestProperty("Content-Type", "application/json");
                 connection.setRequestProperty("Accept", "application/json");
                 connection.connect();
+
 
                 // Send the post data
                 Writer writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
                 writer.write(jsonData);
                 writer.close();
 
+                if(connection.getResponseCode() != HttpURLConnection.HTTP_OK)
+                    return null;
+
                 Log.i("JsonDataSent",jsonData);
 
                 //Receives the response
                 InputStream inputStream = connection.getInputStream();
                 StringBuffer buffer = new StringBuffer();
+
                 // Empty response
                 if(inputStream == null){
                     return null;

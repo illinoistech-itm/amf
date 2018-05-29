@@ -147,7 +147,7 @@
             android:layout_marginTop="5dp"
             android:layout_marginRight="5dp"
             android:textColor="#FFFFFF"
-            android:background="@drawable/button_notibar_didit"
+            android:background="@drawable/button_change"
             android:textSize="10sp"/>
 
     </LinearLayout>
