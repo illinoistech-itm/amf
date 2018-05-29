@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Drone Delivery</string>
     <string name="title_activity_maps">Drone Request</string>
-    <string name="request_text">Request Order Now.</string>
+    <string name="request_text">Request</string>
     <string name="invalid_lat_long_used">Invalid Coordinates.</string>
     <string name="no_address_found">No address was found at this location.</string>
     <string name="address_found">Address Located.</string>

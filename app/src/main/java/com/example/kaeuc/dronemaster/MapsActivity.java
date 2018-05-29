@@ -65,7 +65,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         /*Interface used to create a dialog window and get the results*/
-        LocationDialog.ConfirmDialogListener, ServerTaskResponse,
+        LocationDialog.ConfirmDialogListener, ServerTaskResponse,//LocationDialog의 ConfirmDialoglistener와 OnServerTaskCompleted함수
         DroneLocationResponse{
 
     //  TAG used for logs
@@ -114,9 +114,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     private Button btnRequest;
     private TextView txtAddress;
-    private CheckBox checkOne;
+    /*private CheckBox checkOne;
     private CheckBox checkTwo;
-    private Button btnEtc;
+    private Button btnEtc;*///previous ui
+    private CheckBox battery;
+    private CheckBox blood_sample;
+    private CheckBox first_aid_kit;
+    private CheckBox flashlight;
+    private CheckBox food;
+    private CheckBox map;
+    private CheckBox radio;
+    private CheckBox tissue;
+    private CheckBox tool;
+    private CheckBox water;
     private Toolbar toolbar;
 
 
@@ -178,9 +188,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         
         
         //  Find UI Widgets
-        checkOne = (CheckBox) findViewById(R.id.cb_one);
+        /*checkOne = (CheckBox) findViewById(R.id.cb_one);
         checkTwo = (CheckBox) findViewById(R.id.cb_two);
-        btnEtc = (Button) findViewById(R.id.btn_ect);
+        btnEtc = (Button) findViewById(R.id.btn_ect);*///previous ui
+        battery = (CheckBox)findViewById(R.id.battery);
+        blood_sample = (CheckBox)findViewById(R.id.blood);
+        first_aid_kit = (CheckBox)findViewById(R.id.first_aid_kit);
+        flashlight = (CheckBox)findViewById(R.id.flashlight);
+        food = (CheckBox)findViewById(R.id.food);
+        map = (CheckBox)findViewById(R.id.i_map);
+        radio = (CheckBox)findViewById(R.id.radio);
+        tissue = (CheckBox)findViewById(R.id.tissue);
+        tool = (CheckBox)findViewById(R.id.tool);
+        water = (CheckBox)findViewById(R.id.water);
         btnRequest = (Button) findViewById(R.id.btn_request);
         txtAddress = (TextView) findViewById(R.id.txt_address);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -203,7 +223,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         activityResumed = false;
 
         //  Checks if the gps and network are on and working
-        if(checkNetworkConnection() && checkGpsConnection()){
+        if(checkNetworkConnection()){//&&checkGpsConnection()추가할것
             // Sets the action when the button is clicked
             btnRequest.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -223,13 +243,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(this, "No GPS connection", Toast.LENGTH_SHORT).show();
         }
 
-        btnEtc.setOnClickListener(new View.OnClickListener() {
+        /*btnEtc.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent myIntent = new Intent(MapsActivity.this, CheckActivity.class);
                 startActivity(myIntent);
             }
-        });
+        });*///previous ui
     }
 
     @Override
@@ -674,6 +694,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 instanceAppID,
                 createRequestID());
         sendRequestItemInfo();
+        Toast.makeText(getApplicationContext(),"Success to send the information about checkbox",Toast.LENGTH_SHORT).show();
     }
 
     /* These two checkboxes are for calling different type of drones. (ex Checkbox 1 calls type 1 drones)
@@ -684,8 +705,30 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void sendRequestItemInfo() {
         JSONObject droneObj = new JSONObject();
         try {
-            droneObj.put("drone type one", checkOne.isChecked());
-            droneObj.put("drone type two", checkTwo.isChecked());
+            /*droneObj.put("drone type one", checkOne.isChecked());
+            droneObj.put("drone type two", checkTwo.isChecked());*///previous ui
+            if(battery.isChecked())
+                droneObj.put("drone type one",1);
+            if(blood_sample.isChecked())
+                droneObj.put("drone type two",2);
+            if(first_aid_kit.isChecked())
+                droneObj.put("drone type three",3);
+            if(flashlight.isChecked())
+                droneObj.put("drone type four",4);
+            if(map.isChecked())
+                droneObj.put("drone type five",5);
+            if(radio.isChecked())
+                droneObj.put("drone type six",6);
+            if(tissue.isChecked())
+                droneObj.put("drone type seven",7);
+            if(tool.isChecked())
+                droneObj.put("drone type eight",8);
+            if(water.isChecked())
+                droneObj.put("drone type nine",9);
+            if(food.isChecked())
+                droneObj.put("drone type ten",10);
+
+
         } catch (JSONException e) {
             e.printStackTrace();
         }

@@ -7,6 +7,5 @@ import org.json.JSONObject;
  */
 
 public interface ServerTaskResponse {
-    void onServerT
-askCompleted(JSONObject output);
+    void onServerTaskCompleted(JSONObject output);
 }
