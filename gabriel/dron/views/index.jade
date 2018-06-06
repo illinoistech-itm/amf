@@ -1,0 +1,30 @@
+extends layout
+
+block content
+  .container
+    .row
+      .col-8#canvas
+      .col-4#legend
+        .slidercontainer
+          input#rateSlider.slider(type='range', min='10', max='30', value='10', step='10')
+          p
+            | # Points: 
+            span#rateSpan
+        .container#droneCards
+          .row.justify-content-md-center
+        .text-center
+          button#btnLock.btn.btn-block.btn-outline-warning(type='button') Lock Map
+          button#btnCompute.btn.btn-block.btn-outline-success(type='button') Compute Paths
+          button#btnGo.btn.btn-block.btn-outline-success(type='button') Go!
+
+
+
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.0/socket.io.js')
+  script(src='javascripts/constants.js')
+  script(src='javascripts/points.js')
+  script(src='javascripts/drones.js')
+  script(src='javascripts/easystar.js')
+  script(src='javascripts/route.js')
+  
+  
+

@@ -1,0 +1,24 @@
+{
+  "name": "dron",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "dev": "node_modules/.bin/nodemon",
+    "debug": "node_modules/.bin/nodemon --inspect ./bin/www"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "express": "~4.16.0",
+    "http-errors": "~1.6.2",
+    "jade": "~1.11.0",
+    "javascript-astar": "^0.4.1",
+    "morgan": "~1.9.0",
+    "socket.io": "^2.1.0",
+    "ws": "^5.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.17.3"
+  }
+}
