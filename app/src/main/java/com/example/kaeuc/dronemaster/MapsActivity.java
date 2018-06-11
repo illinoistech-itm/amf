@@ -54,6 +54,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -81,6 +82,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean moveCameraToUser = false;
     private boolean activityResumed = false;
     private boolean orderDelivered = false;
+
+    long now;
+    Date date;
+    SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
 
     /*  Drone Variables */
@@ -303,7 +308,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
     }
-
 
     /*
     *   ACTIVITY METHODS END
@@ -727,7 +731,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 droneObj.put("drone type nine",9);
             if(food.isChecked())
                 droneObj.put("drone type ten",10);
-
 
         } catch (JSONException e) {
             e.printStackTrace();

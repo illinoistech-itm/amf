@@ -10,8 +10,11 @@ import android.widget.Toast;
 import com.google.android.gms.ads.internal.gmsg.HttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,6 +36,8 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
+
+import static java.lang.System.in;
 
 
 /**
@@ -65,14 +70,16 @@ public class ServerAccess extends AsyncTask<String,String,String> {
             String JsonDATA = params[0];
             String ipAddress = params[1];
             BufferedReader reader = null;
-            HttpsURLConnection connection = null;
+            HttpURLConnection connection = null;
 
             try {
                 URL url = new URL(mContext.getString(R.string.server_post_url));
-                connection = (HttpsURLConnection) url.openConnection();
+                connection = (HttpURLConnection) url.openConnection();
 
+                /*getPinnedCertSslSocketFactory(mContext);*/
 //                connection.setHostnameVerifier(hostnameVerifier);
 
+                /*setUpHttpsConnection(connection,mContext);*/
                 connection.setDoOutput(true);
                 connection.setDoInput(true);
                 connection.setReadTimeout(10000);
@@ -88,6 +95,7 @@ public class ServerAccess extends AsyncTask<String,String,String> {
                 writer.close();
 
                 InputStream inputStream = connection.getInputStream();
+
                 //input stream
                 StringBuffer buffer = new StringBuffer();
 
@@ -154,6 +162,45 @@ public class ServerAccess extends AsyncTask<String,String,String> {
             //Do something with result
         }
 
+    /*public static HttpsURLConnection setUpHttpsConnection(HttpsURLConnection urlString, Context context)
+    {
+        try
+        {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+
+            InputStream caInput = context.getResources().openRawResource(R.raw.localhost);
+            Certificate ca = cf.generateCertificate(caInput);
+            System.out.println("ca=" + ((X509Certificate) ca).getSubjectDN());
+
+            // Create a KeyStore containing our trusted CAs
+            String keyStoreType = KeyStore.getDefaultType();
+            KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+            keyStore.load(null, null);
+            keyStore.setCertificateEntry("ca", ca);
+
+            // Create a TrustManager that trusts the CAs in our KeyStore
+            String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
+            tmf.init(keyStore);
+
+            // Create an SSLContext that uses our TrustManager
+            SSLContext sslcontext = SSLContext.getInstance("TLS");
+            sslcontext.init(null, tmf.getTrustManagers(), null);
+
+            // Tell the URLConnection to use a SocketFactory from our SSLContext
+            URL url = new URL(context.getString(R.string.server_post_url));
+            HttpsURLConnection urlConnection = (HttpsURLConnection)url.openConnection();
+            urlConnection.setSSLSocketFactory(sslcontext.getSocketFactory());
+
+            return urlConnection;
+        }
+        catch (Exception ex)
+        {
+            Log.e(TAG, "Failed to establish SSL connection to server: " + ex.toString());
+            return null;
+        }
+    }*/
+
         /*HostnameVerifier hostnameVerifier = new HostnameVerifier() {
             @Override
             public boolean verify(String hostname, SSLSession session) {
@@ -162,7 +209,7 @@ public class ServerAccess extends AsyncTask<String,String,String> {
             }
         };*/
 
-    public static SSLSocketFactory getPinnedCertSslSocketFactory(Context context) {
+ /*   public static SSLSocketFactory getPinnedCertSslSocketFactory(Context context) {
         try {
             // Load CAs from an InputStream
             // (could be from a resource or ByteArrayInputStream or ...)
@@ -210,7 +257,7 @@ public class ServerAccess extends AsyncTask<String,String,String> {
             e.printStackTrace();
         }
         return null;
-    }
+    }*/
 
 
 
