@@ -15,7 +15,6 @@
         app:titleTextColor="@color/white"
         />
 
-
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
@@ -25,7 +24,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:context="com.example.kaeuc.dronemaster.MapsActivity" />
-
 
 
     <ImageView
@@ -147,7 +145,7 @@
             android:layout_marginTop="5dp"
             android:layout_marginRight="5dp"
             android:textColor="#FFFFFF"
-            android:background="@drawable/button_notibar_didit"
+            android:background="@drawable/button_change"
             android:textSize="10sp"/>
 
     </LinearLayout>

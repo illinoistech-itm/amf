@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Drone Delivery</string>
+    <string name="app_name">AMF</string>
     <string name="title_activity_maps">Drone Request</string>
     <string name="request_text">Request</string>
     <string name="invalid_lat_long_used">Invalid Coordinates.</string>
@@ -22,3 +22,4 @@
     <string name="address">address</string>
     <string name="request_busy">Sorry, but our drones are busy now. \nTry again later.</string>
 </resources>
+
