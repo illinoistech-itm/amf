@@ -2,7 +2,7 @@
 
 This repository contains the Android Studio project, communication scripts and server files for drone request and location-based delivery.
 
-![Android App Screenshot](./image/main.jpg)
+![Android App Screenshot](./image/main.png)
 
 <!-- ## Getting Started
 
