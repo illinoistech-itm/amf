@@ -68,7 +68,8 @@ class Drone():
         Blocks until connection is established.
         """
         print('Connecting to vehicle on: {}'.format(self.address), file=self.output)
-        self.vehicle = dronekit.connect(self.address, wait_ready=True, baud=57600)
+        #increased heartbeat timeout from 30s to 120s
+        self.vehicle = dronekit.connect(self.address, wait_ready=True, heartbeat_timeout=120, baud=57600)
         print('Connection established', file=self.output)
 
         self.cmds = self.vehicle.commands
@@ -166,6 +167,9 @@ class Drone():
         # Copter should arm in GUIDED mode
         self.vehicle.mode = dronekit.VehicleMode("GUIDED")
         self.vehicle.armed = True
+        # self.vehicle.FS_THR_ENABLE = 0 this disables radio failsafe if needed
+        # code below disables battery failsafe. This was causing the drone not to arm (even when battery was 99%)
+        self.vehicle.FS_BATT_ENABLE = 0
 
         # Confirm vehicle armed before attempting to take off
         while not self.vehicle.armed:
