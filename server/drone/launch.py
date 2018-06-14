@@ -2,6 +2,7 @@ import sys
 import drone
 import subprocess
 
+
 if len(sys.argv) != 5:
     print "Incorrect number of arguments, invoke this script with: \n \
     python launch.py adressname target-latitude target-longitude flag. \n \
