@@ -167,9 +167,8 @@ class Drone():
         # Copter should arm in GUIDED mode
         self.vehicle.mode = dronekit.VehicleMode("GUIDED")
         self.vehicle.armed = True
-        # self.vehicle.FS_THR_ENABLE = 0 this disables radio failsafe if needed
-        # code below disables battery failsafe. This was causing the drone not to arm (even when battery was 99%)
-        self.vehicle.FS_BATT_ENABLE = 0
+        self.vehicle.FS_THR_ENABLE = 0 #disable RC failsafe
+        self.vehicle.FS_BATT_ENABLE = 0 #disable battery failsafe
 
         # Confirm vehicle armed before attempting to take off
         while not self.vehicle.armed:
@@ -178,7 +177,7 @@ class Drone():
 
     def start_throtle(self):
         """
-        The copter can't start a mission from the ground without the throttle 
+        The copter can't start a mission from the ground without the throttle
         being activated. This is provided as a way to do that.
         """
         print("Starting throtle", file=self.output)
@@ -251,7 +250,7 @@ class Drone():
         Fairly ugly way to do it. For some reason when mission ends the next index
         is set back to 1.
         This checks if we have already passed item 1 once.
-        Needs to be called at least once in the middle of the mission after the 
+        Needs to be called at least once in the middle of the mission after the
         first command is done. This is done on the location callback function,
         ensuring this works.
         Use mission_ended() to actually get the bool value.
