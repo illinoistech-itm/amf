@@ -649,6 +649,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             locationObj.put(getString(R.string.location_latitude),lat);
             locationObj.put(getString(R.string.location_longitude),lon);
             locationObj.put(getString(R.string.address),address);
+
+            if (battery.isChecked())
+                locationObj.put("drone_type_one", "1");
+            if (blood_sample.isChecked())
+                locationObj.put("drone_type_two", "2");
+            if (first_aid_kit.isChecked())
+                locationObj.put("drone_type_three", "3");
+            if (flashlight.isChecked())
+                locationObj.put("drone_type_four", "4");
+            if (map.isChecked())
+                locationObj.put("drone_type_five", "5");
+            if (radio.isChecked())
+                locationObj.put("drone_type_six", "6");
+            if (tissue.isChecked())
+                locationObj.put("drone_type_seven", "7");
+            if (tool.isChecked())
+                locationObj.put("drone_type_eight", "8");
+            if (water.isChecked())
+                locationObj.put("drone_type_nine", "9");
+            if (food.isChecked())
+                locationObj.put("drone_type_ten", "10");
+
         }catch (JSONException e){
             e.printStackTrace();
         }
@@ -656,6 +678,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (locationObj.length() > 0){
             new ServerAccess(this).execute(String.valueOf(locationObj),ipAddress);
         }
+
     }
 
     @Override
@@ -697,7 +720,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mAddressOutput,
                 instanceAppID,
                 createRequestID());
-        sendRequestItemInfo();
+//                sendRequestItemInfo();
         Toast.makeText(getApplicationContext(),"Success to send the information about checkbox",Toast.LENGTH_SHORT).show();
     }
 
@@ -706,31 +729,32 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     * There is no string variable which is receiving checkbox information in , so placed "drone type two/one" instead.
     * Needs to be fixed.
     * */
-    public void sendRequestItemInfo() {
+
+    /*public void sendRequestItemInfo() {
         JSONObject droneObj = new JSONObject();
         try {
-            /*droneObj.put("drone type one", checkOne.isChecked());
-            droneObj.put("drone type two", checkTwo.isChecked());*///previous ui
-            if(battery.isChecked())
-                droneObj.put("drone type one",1);
-            if(blood_sample.isChecked())
-                droneObj.put("drone type two",2);
-            if(first_aid_kit.isChecked())
-                droneObj.put("drone type three",3);
-            if(flashlight.isChecked())
-                droneObj.put("drone type four",4);
-            if(map.isChecked())
-                droneObj.put("drone type five",5);
-            if(radio.isChecked())
-                droneObj.put("drone type six",6);
-            if(tissue.isChecked())
-                droneObj.put("drone type seven",7);
-            if(tool.isChecked())
-                droneObj.put("drone type eight",8);
-            if(water.isChecked())
-                droneObj.put("drone type nine",9);
-            if(food.isChecked())
-                droneObj.put("drone type ten",10);
+            *//*droneObj.put("drone type one", checkOne.isChecked());
+            droneObj.put("drone type two", checkTwo.isChecked());*//*//previous ui
+            if (battery.isChecked())
+                droneObj.put("drone_type_one", "1");
+            if (blood_sample.isChecked())
+                droneObj.put("drone_type_two", "2");
+            if (first_aid_kit.isChecked())
+                droneObj.put("drone_type_three", "3");
+            if (flashlight.isChecked())
+                droneObj.put("drone_type_four", "4");
+            if (map.isChecked())
+                droneObj.put("drone_type_five", "5");
+            if (radio.isChecked())
+                droneObj.put("drone_type_six", "6");
+            if (tissue.isChecked())
+                droneObj.put("drone_type_seven", "7");
+            if (tool.isChecked())
+                droneObj.put("drone_type_eight", "8");
+            if (water.isChecked())
+                droneObj.put("drone_type_nine", "9");
+            if (food.isChecked())
+                droneObj.put("drone_type_ten", "10");
 
         } catch (JSONException e) {
             e.printStackTrace();

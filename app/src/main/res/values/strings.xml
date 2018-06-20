@@ -18,6 +18,7 @@
     <string name="request_succeed">Request Received! Sending drone to:\n</string>
     <string name="request_prefix">REQUEST_</string>
     <string name="instance_id">instanceID</string>
+    <string name="check_id">checkID</string>
     <string name="request_id">requestID</string>
     <string name="address">address</string>
     <string name="request_busy">Sorry, but our drones are busy now. \nTry again later.</string>
