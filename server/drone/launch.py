@@ -2,13 +2,11 @@ import sys
 import drone
 import subprocess
 
-
 if len(sys.argv) != 5:
-    print "Incorrect number of arguments, invoke this script with: \n \
+    print ("Incorrect number of arguments, invoke this script with: \n \
     python launch.py adressname target-latitude target-longitude flag. \n \
     Addressname of sitl will run it in a simulation \n \
-    If flag is 1, a new terminal will be created, if it is 0, it will run on the open terminal"
-
+    If flag is 1, a new terminal will be created, if it is 0, it will run on the open terminal")
     sys.exit()
 
 if sys.argv[4] == "1":

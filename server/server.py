@@ -16,7 +16,7 @@ from decimal import Decimal
 #import urllib.request
 import urllib.parse
 #from urllib.parse import urlparse
-
+import subprocess
 
 """
 #sqlite3
@@ -69,19 +69,19 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 		print(type(data))
 		json_data = json.loads(data)
 		print(data)
-		#print(data.keys())
 		post_data=urllib.parse.parse_qs(data)
 
 
 		self.send_response(200)
-		#response = BytesIO()
 
 		print('This is POST request. ')
 
 		print("latitude :", json_data['latitude'])  
 		print("longitude :", json_data['longitude']) 
+		# print lat, lon info from app
 
-
-
+		subprocess.Popen(['python', '../server/drone/launch.py', '/dev/ttyUSB0', str(json_data['latitude']), str(json_data['longitude']), '0'])
+		# connect with drone by transfering lat,lon info
+		
 httpd = HTTPServer(('10.0.0.10', 8080), SimpleHTTPRequestHandler)
 httpd.serve_forever() 
