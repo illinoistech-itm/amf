@@ -80,8 +80,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 		print("longitude :", json_data['longitude']) 
 		# print lat, lon info from app
 
-		subprocess.Popen(['python', '../server/drone/launch.py', '/dev/ttyUSB0', str(json_data['latitude']), str(json_data['longitude']), '0'])
+		subprocess.Popen(['python', '/home/controller/amf/server/drone/launch.py', '/dev/ttyUSB0', str(json_data['latitude']), str(json_data['longitude']), '0'])
+		#subprocess.Popen(['python3', '/home/controller/amf/server/drone/launch.py', 'sitl', str(json_data['latitude']), str(json_data['longitude']), '0'])
 		# connect with drone by transfering lat,lon info
-		
+
 httpd = HTTPServer(('10.0.0.10', 8080), SimpleHTTPRequestHandler)
 httpd.serve_forever() 
