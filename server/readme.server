@@ -23,3 +23,5 @@ dronekit-sitl copter --home=41.8348731,-87.62700589999997,584,353
 #import
 #change address 10.0.0.7:8080 in server.py and string.xml 
 #check dmesg
+#if server can't open port for ttyUSB0, sudo chmod 777 /dev/ttyUSB0
+ (on linux)
