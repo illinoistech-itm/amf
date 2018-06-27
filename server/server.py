@@ -1,22 +1,24 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
-#from io import BytesIO
-#import SimpleHTTPServer 
-#import SocketServer
 import logging
 import logging.handlers
 import sqlite3
 import string
 import json
-#import requests
 import re
 import operator
 import sys
 import subprocess 
 from decimal import Decimal
-#import urllib.request
 import urllib.parse
-#from urllib.parse import urlparse
 import subprocess
+#from io import BytesIO
+#from urllib.parse import urlparse
+#import SimpleHTTPServer 
+#import SocketServer
+#import requests
+#import urllib.request
+
+
 
 """
 #sqlite3
@@ -28,7 +30,6 @@ import subprocess
 """
 #logging
 """
-
 
 logger=logging.getLogger("AMF")
 logger.setLevel(logging.DEBUG)
@@ -46,6 +47,7 @@ logger.addHandler(streamHandler)
 
 logger.debug("Server start!")
 
+# Add post information, change the folder
 
 
 """
@@ -84,5 +86,5 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 		#subprocess.Popen(['python3', '/home/controller/amf/server/drone/launch.py', 'sitl', str(json_data['latitude']), str(json_data['longitude']), '0'])
 		# connect with drone by transfering lat,lon info
 
-httpd = HTTPServer(('10.0.0.10', 8080), SimpleHTTPRequestHandler)
+httpd = HTTPServer(('10.0.0.7', 8080), SimpleHTTPRequestHandler)
 httpd.serve_forever() 
