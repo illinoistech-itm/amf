@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Searching by address"
+        android:textColor="@color/black" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <EditText
+            android:id="@+id/edt_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:hint="Enter Address here.."
+            android:ems="12"
+            android:padding="10dp" />
+        <Button
+            android:id="@+id/btn_address"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="Search" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Searching by coordinate"
+        android:textColor="@color/black"
+        android:layout_marginTop="10dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/edt_longitude"
+            android:layout_width="126dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:hint="Longitude"
+            android:padding="5dp" />
+
+        <EditText
+            android:id="@+id/edt_latitude"
+            android:layout_width="126dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:hint="Latitude"
+            android:padding="5dp" />
+
+        <Button
+            android:id="@+id/btn_coordinate"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="Search" />
+
+    </LinearLayout>
+
+</LinearLayout>

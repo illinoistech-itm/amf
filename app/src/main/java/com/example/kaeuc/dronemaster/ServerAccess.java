@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.ads.internal.gmsg.HttpClient;
@@ -52,7 +53,7 @@ public class ServerAccess extends AsyncTask<String,String,String> {
         private static final String TAG = "ServerAccess";
         public ServerTaskResponse callBack = null;
         private Context mContext;
-
+//        private MapsActivity main;
 
         public ServerAccess(Context context){
             this.mContext = context;
@@ -71,9 +72,12 @@ public class ServerAccess extends AsyncTask<String,String,String> {
             String ipAddress = params[1];
             BufferedReader reader = null;
             HttpURLConnection connection = null;
+            /*String server_post_url = main.server_post_url;
+            String server_get_url = main.server_get_url;*/
 
             try {
                 URL url = new URL(mContext.getString(R.string.server_post_url));
+                /*URL url = new URL();*/
                 connection = (HttpURLConnection) url.openConnection();
 
                 /*getPinnedCertSslSocketFactory(mContext);*/
