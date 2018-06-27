@@ -6,9 +6,9 @@ This guide will help you get set up to run the AMF python scripts and troublesho
 
 **Python**: specifically, Python 2.
 
-**[Dronekit & Dronekit-sitl]**(http://python.dronekit.io/guide/quick_start.html#installation)
+[Dronekit & Dronekit-sitl](http://python.dronekit.io/guide/quick_start.html#installation)
 
-**[MAVLink]**(https://mavlink.io/en/getting_started/installation.html)
+[MAVLink](https://mavlink.io/en/getting_started/installation.html)
 
 Depending on what you're doing, you may not need MAVLink, but if you plan to send the drone commands in real-time you will need this.
 
