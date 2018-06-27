@@ -1,14 +1,26 @@
-package com.example.kaeuc.dronemaster;
+package com.example.administrator.amf_gear;
 
-import android.Manifest;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+import android.*;
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -25,43 +37,31 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowInsets;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener,
         GoogleMap.OnMyLocationButtonClickListener,
         ActivityCompat.OnRequestPermissionsResultCallback,
         com.google.android.gms.location.LocationListener,
@@ -70,7 +70,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         GoogleApiClient.OnConnectionFailedListener,
         /*Interface used to create a dialog window and get the results*/
         LocationDialog.ConfirmDialogListener, ServerTaskResponse,//LocationDialog의 ConfirmDialoglistener와 OnServerTaskCompleted함수
-        DroneLocationResponse {
+        DroneLocationResponse{
 
     //  TAG used for logs
 
@@ -89,6 +89,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     long now;
     Date date;
     SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+
 
     /*  Drone Variables */
 
@@ -114,7 +115,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     //  Permissions needed
-    private static final String[] PERMISSIONS_REQUIRED = {Manifest.permission.ACCESS_FINE_LOCATION};
+    private static final String [] PERMISSIONS_REQUIRED = {android.Manifest.permission.ACCESS_FINE_LOCATION};
 
 
     /*  UI Widgets  */
@@ -147,6 +148,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String instanceAppID = UUID.randomUUID().toString();
     private String ipAddress = "";
 
+    @Override
+    public void onMapLongClick(LatLng latLng) {
+
+    }
+
 
     // Inner class responsible to receive the results of the geofence intent
     @SuppressLint("ParcelCreator")
@@ -154,7 +160,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         public AddressResultReceiver(Handler handler) {
             super(handler);
         }
-
         @Override
         protected void onReceiveResult(int resultCode, Bundle resultData) {
             // Display the address string
@@ -172,8 +177,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     Runnable getDroneLocation = new Runnable() {
         @Override
         public void run() {
-            if (!orderDelivered) {
-                new DroneLocation(MapsActivity.this).execute(instanceAppID, ipAddress);
+            if(!orderDelivered) {
+                new DroneLocation(MapsActivity.this).execute(instanceAppID,ipAddress);
                 droneHandler.postDelayed(this, DRONE_POSITION_INTERVAL);
             }
         }
@@ -194,20 +199,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
 
+
         //  Find UI Widgets
         /*checkOne = (CheckBox) findViewById(R.id.cb_one);
         checkTwo = (CheckBox) findViewById(R.id.cb_two);
         btnEtc = (Button) findViewById(R.id.btn_ect);*///previous ui
-        battery = (CheckBox) findViewById(R.id.battery);
-        blood_sample = (CheckBox) findViewById(R.id.blood);
-        first_aid_kit = (CheckBox) findViewById(R.id.first_aid_kit);
-        flashlight = (CheckBox) findViewById(R.id.flashlight);
-        food = (CheckBox) findViewById(R.id.food);
-        map = (CheckBox) findViewById(R.id.i_map);
-        radio = (CheckBox) findViewById(R.id.radio);
-        tissue = (CheckBox) findViewById(R.id.tissue);
-        tool = (CheckBox) findViewById(R.id.tool);
-        water = (CheckBox) findViewById(R.id.water);
+        battery = (CheckBox)findViewById(R.id.battery);
+        blood_sample = (CheckBox)findViewById(R.id.blood);
+        first_aid_kit = (CheckBox)findViewById(R.id.first_aid_kit);
+        flashlight = (CheckBox)findViewById(R.id.flashlight);
+        food = (CheckBox)findViewById(R.id.food);
+        map = (CheckBox)findViewById(R.id.i_map);
+        radio = (CheckBox)findViewById(R.id.radio);
+        tissue = (CheckBox)findViewById(R.id.tissue);
+        tool = (CheckBox)findViewById(R.id.tool);
+        water = (CheckBox)findViewById(R.id.water);
         btnRequest = (Button) findViewById(R.id.btn_request);
         txtAddress = (TextView) findViewById(R.id.txt_address);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -221,7 +227,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mResultReceiver = new AddressResultReceiver(new Handler());
 
         //  Used in case the app was running before or change the orientation
-        if (savedInstanceState != null) {
+        if(savedInstanceState != null){
             centerLocation = savedInstanceState.getParcelable("centerLocation");
             mCurrentLocation = savedInstanceState.getParcelable("currentLocation");
             moveCameraToUser = true;
@@ -230,7 +236,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         activityResumed = false;
 
         //  Checks if the gps and network are on and working
-        if (checkNetworkConnection()) {//&&checkGpsConnection()추가할것
+        if(checkNetworkConnection()){//&&checkGpsConnection()추가할것
             // Sets the action when the button is clicked
             btnRequest.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -239,12 +245,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
             buildGoogleApiClient();
-        } else if (!checkNetworkConnection()) {
+        }else if(!checkNetworkConnection()){
             // TODO
             // Change the layout for no internet connection
             Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
             setContentView(R.layout.no_connection);
-        } else if (!checkGpsConnection()) {
+        }else if(!checkGpsConnection()){
             //  TODO
             // Turn on gps dialog
             Toast.makeText(this, "No GPS connection", Toast.LENGTH_SHORT).show();
@@ -261,7 +267,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     protected void onStart() {
-        if (mGoogleApiClient != null) {
+        if( mGoogleApiClient != null) {
             mGoogleApiClient.connect();
         }
         super.onStart();
@@ -271,7 +277,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onStop() {
         super.onStop();
         activityResumed = true;
-        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+        if( mGoogleApiClient != null && mGoogleApiClient.isConnected() ) {
             mGoogleApiClient.disconnect();
         }
     }
@@ -296,7 +302,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
+        switch (item.getItemId()){
             case (R.id.action_settings): {
                 showInputDialog();
                 return true;
@@ -317,12 +323,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     /**
-     * CUSTOM METHODS START
+     *  CUSTOM METHODS START
      */
 
     /*Sets the map on the current location*/
     private void initMapCamera(Location location) {
-        if (!moveCameraToUser) {
+        if(!moveCameraToUser) {
             if (locationPermissionGranted) {
                 CameraPosition cameraPosition = CameraPosition.builder().target(
                         new LatLng(location.getLatitude(), location.getLongitude()))
@@ -346,7 +352,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void initMapCamera(LatLng location) {
-        if (!moveCameraToUser) {
+        if(!moveCameraToUser) {
             if (locationPermissionGranted) {
                 CameraPosition cameraPosition = CameraPosition.builder().target(
                         new LatLng(location.latitude, location.longitude))
@@ -361,7 +367,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void checkLocationPermissions() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             // Permission to access the location is missing.
             ActivityCompat.requestPermissions(this, PERMISSIONS_REQUIRED, LOCATION_PERMISSION_REQUEST_CODE);
@@ -394,8 +400,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void startLocationUpdates() {
         // The final argument to {@code requestLocationUpdates()} is a LocationListener
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
-        if (locationPermissionGranted)
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        if(locationPermissionGranted)
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,mLocationRequest,this);
     }
 
     /**
@@ -422,7 +428,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // mLocationRequest.setInterval(1000);
         // Sets the fastest rate for active location updates. This interval is exact, and your
         // application will never receive updates faster than this value.
-        request.setFastestInterval(1000 / 2);
+        request.setFastestInterval(1000/2);
         //mLocationRequest.setFastestInterval(1000/2);
         //mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -431,9 +437,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     /**
      * Shows a confirmation dialog to confirm the address
      */
-    private void confirmLocation() {
+    private void confirmLocation(){
         LocationDialog dialog = new LocationDialog();
-        dialog.show(getFragmentManager(), "LocationDialogFragment");
+        dialog.show(getFragmentManager(),"LocationDialogFragment");
     }
 
     /**
@@ -445,9 +451,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         intent.putExtra(Constants.RECEIVER, mResultReceiver);
         // Creates the bundle which will keep the location coordinates
         Bundle location = new Bundle();
-        location.putDouble(getString(R.string.location_latitude), lat);
-        location.putDouble(getString(R.string.location_longitude), lon);
-        intent.putExtra(getString(R.string.location_bundle), location);
+        location.putDouble(getString(R.string.location_latitude),lat);
+        location.putDouble(getString(R.string.location_longitude),lon);
+        intent.putExtra(getString(R.string.location_bundle),location);
         startService(intent);
     }
 
@@ -462,9 +468,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (activeInfo != null && activeInfo.isConnected()) {
             wifiConnected = activeInfo.getType() == ConnectivityManager.TYPE_WIFI;
             mobileConnected = activeInfo.getType() == ConnectivityManager.TYPE_MOBILE;
-            if (wifiConnected) {
+            if(wifiConnected) {
                 Log.i(TAG, getString(R.string.wifi_connection));
-            } else if (mobileConnected) {
+            } else if (mobileConnected){
                 Log.i(TAG, getString(R.string.mobile_connection));
             }
         } else {
@@ -474,17 +480,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return true;
     }
 
-    private boolean checkGpsConnection() {
+    private boolean checkGpsConnection(){
         LocationManager locationManager =
                 (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
-    private String createRequestID() {
+    private String createRequestID()
+    {
         Calendar c = Calendar.getInstance();
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy_HH:mm:ss:ms");
         String formattedDate = df.format(c.getTime());
-        return getString(R.string.request_prefix) + formattedDate;
+        return getString(R.string.request_prefix) + formattedDate ;
     }
 
     /**
@@ -509,14 +516,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap = googleMap;
         mMap.setOnMyLocationButtonClickListener(this);
         //  Runs when the app is partially visible or the orientation changes
-        if (moveCameraToUser) {
+        if(moveCameraToUser){
             mMap.moveCamera(CameraUpdateFactory.newLatLng(centerLocation));
         }
         mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
             @Override
             public void onCameraChange(CameraPosition cameraPosition) {
                 centerLocation = mMap.getCameraPosition().target;
-                startIntentService(centerLocation.latitude, centerLocation.longitude);
+                startIntentService(centerLocation.latitude,centerLocation.longitude);
             }
         });
         enableMyLocation();
@@ -524,11 +531,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     /**
-     * Sets the My Location button on the map
+     *  Sets the My Location button on the map
      */
 
     private void enableMyLocation() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             // Permission to access the location is missing.
             ActivityCompat.requestPermissions(this, PERMISSIONS_REQUIRED, LOCATION_PERMISSION_REQUEST_CODE);
@@ -539,7 +546,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /**
-     * Callback called after the permission request dialog
+     *  Callback called after the permission request dialog
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
@@ -552,7 +559,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // Enable the my location layer if the permission has been granted.
             locationPermissionGranted = true;
             onConnected(new Bundle());
-        } else {
+        }else{
             Toast.makeText(this, "You need to grant GPS permissions", Toast.LENGTH_LONG).show();
             this.finish();
         }
@@ -572,10 +579,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     public void onServerTaskCompleted(JSONObject output) {
-        int codeResult = 0;
+        int codeResult=0;
         try {
             codeResult = output.getInt("result");
-            if (codeResult == 1) {
+            if(codeResult == 1){
                 // maybe remove this later
 //            droneRequestedID = output.getString("droneID");
                 AlertDialog alertDialog = new AlertDialog.Builder(this).create();
@@ -585,12 +592,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
-                                droneHandler.postDelayed(getDroneLocation, DRONE_POSITION_INTERVAL);
+                                droneHandler.postDelayed(getDroneLocation,DRONE_POSITION_INTERVAL);
                                 btnRequest.setEnabled(false);
                             }
                         });
                 alertDialog.show();
-            } else if (codeResult == -1) {
+            }else if(codeResult == -1){
                 AlertDialog alertDialog = new AlertDialog.Builder(this).create();
                 alertDialog.setTitle("Ooops!");
                 alertDialog.setMessage(output.getString("response"));
@@ -601,7 +608,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             }
                         });
                 alertDialog.show();
-            } else {
+            }else{
                 // TODO
                 // error message
             }
@@ -617,16 +624,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         int resultCode = 0;
         try {
             resultCode = output.getInt("RESPONSE");
-            if (resultCode == 200) {
+            if(resultCode == 200){
                 mMap.clear();
                 position = new LatLng(output.getDouble("LATITUDE"), output.getDouble("LONGITUDE"));
                 droneMarker = new MarkerOptions().position(position)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.drone_icon))
-                        .anchor((float) 0.5, (float) 0.5)
-                        .rotation((float) 90.0)
+                        .anchor((float)0.5,(float)0.5)
+                        .rotation((float)90.0)
                         .flat(true);
                 mMap.addMarker(droneMarker);
-            } else if (resultCode == -2) {
+            }else if(resultCode == -2){
                 mMap.clear();
                 Toast.makeText(this, "The package was delivered!", Toast.LENGTH_LONG).show();
                 btnRequest.setEnabled(true);
@@ -642,52 +649,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * INTERFACES METHODS END
      */
 
-    public void sendRequestInfo(double lat, double lon, String address, String instanceId, String reqId) {
+    public void sendRequestInfo(double lat, double lon, String address, String instanceId, String reqId){
         JSONObject locationObj = new JSONObject();
-        try {
-            locationObj.put(getString(R.string.instance_id), instanceId);
-            locationObj.put(getString(R.string.request_id), reqId);
-            locationObj.put(getString(R.string.location_latitude), lat);
-            locationObj.put(getString(R.string.location_longitude), lon);
-            locationObj.put(getString(R.string.address), address);
-
-            if (battery.isChecked())
-                locationObj.put("drone_type_one", "1");
-            if (blood_sample.isChecked())
-                locationObj.put("drone_type_two", "2");
-            if (first_aid_kit.isChecked())
-                locationObj.put("drone_type_three", "3");
-            if (flashlight.isChecked())
-                locationObj.put("drone_type_four", "4");
-            if (map.isChecked())
-                locationObj.put("drone_type_five", "5");
-            if (radio.isChecked())
-                locationObj.put("drone_type_six", "6");
-            if (tissue.isChecked())
-                locationObj.put("drone_type_seven", "7");
-            if (tool.isChecked())
-                locationObj.put("drone_type_eight", "8");
-            if (water.isChecked())
-                locationObj.put("drone_type_nine", "9");
-            if (food.isChecked())
-                locationObj.put("drone_type_ten", "10");
-
-
-        } catch (JSONException e) {
+        try{
+            locationObj.put(getString(R.string.instance_id),instanceId);
+            locationObj.put(getString(R.string.request_id),reqId);
+            locationObj.put(getString(R.string.location_latitude),lat);
+            locationObj.put(getString(R.string.location_longitude),lon);
+            locationObj.put(getString(R.string.address),address);
+        }catch (JSONException e){
             e.printStackTrace();
         }
 
-        if (locationObj.length() > 0) {
-            new ServerAccess(this).execute(String.valueOf(locationObj), ipAddress);
+        if (locationObj.length() > 0){
+            new ServerAccess(this).execute(String.valueOf(locationObj),ipAddress);
         }
-
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
 
-        outState.putParcelable("centerLocation", centerLocation);
-        outState.putParcelable("currentLocation", mCurrentLocation);
+        outState.putParcelable("centerLocation",centerLocation);
+        outState.putParcelable("currentLocation",mCurrentLocation);
         super.onSaveInstanceState(outState);
 
     }
@@ -699,21 +682,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         startLocationUpdates();
         mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         checkLocationPermissions();
-        if (activityResumed) {
+        if(activityResumed){
             initMapCamera(centerLocation);
-        } else {
+        }else{
             initMapCamera(mCurrentLocation);
         }
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-        Log.e(TAG, "Google API connection was suspended");
+        Log.e(TAG,"Google API connection was suspended");
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.e(TAG, "It was not possible to connect to Google API.");
+        Log.e(TAG,"It was not possible to connect to Google API.");
     }
 
     @Override
@@ -722,8 +705,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mAddressOutput,
                 instanceAppID,
                 createRequestID());
-//                sendRequestItemInfo();
-                Toast.makeText(getApplicationContext(), "Success to send the information about checkbox", Toast.LENGTH_SHORT).show();
+        sendRequestItemInfo();
+        Toast.makeText(getApplicationContext(),"Success to send the information about checkbox",Toast.LENGTH_SHORT).show();
     }
 
     /* These two checkboxes are for calling different type of drones. (ex Checkbox 1 calls type 1 drones)
@@ -731,39 +714,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     * There is no string variable which is receiving checkbox information in , so placed "drone type two/one" instead.
     * Needs to be fixed.
     * */
-
-    /*public void sendRequestItemInfo() {
-        *//*ArrayList<HashMap<String , String>> arrayList = new ArrayList<>();
-        HashMap<String, String> hashMap = new HashMap<>();
-
-//            droneObj.put("drone type one", checkOne.isChecked());
-//            droneObj.put("drone type two", checkTwo.isChecked());
-            if (battery.isChecked())
-                hashMap.put("drone_type","1");
-            if (blood_sample.isChecked())
-                hashMap.put("drone_type","2");
-            if (first_aid_kit.isChecked())
-                hashMap.put("drone_type","3");
-            if (flashlight.isChecked())
-                hashMap.put("drone_type","4");
-            if (map.isChecked())
-                hashMap.put("drone_type","5");
-            if (radio.isChecked())
-                hashMap.put("drone_type","6");
-            if (tissue.isChecked())
-                hashMap.put("drone_type","7");
-            if (tool.isChecked())
-                hashMap.put("drone_type","8");
-            if (water.isChecked())
-                hashMap.put("drone_type","9");
-            if (food.isChecked())
-                hashMap.put("drone_type","10");
-        arrayList.add(hashMap);
-        return String.valueOf(arrayList);*//*
+    public void sendRequestItemInfo() {
         JSONObject droneObj = new JSONObject();
         try {
-            *//*droneObj.put("drone type one", checkOne.isChecked());
-            droneObj.put("drone type two", checkTwo.isChecked());*//*//previous ui
+            /*droneObj.put("drone type one", checkOne.isChecked());
+            droneObj.put("drone type two", checkTwo.isChecked());*///previous ui
             if(battery.isChecked())
                 droneObj.put("drone type one","1");
             if(blood_sample.isChecked())
@@ -791,7 +746,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (droneObj.length() > 0) {
             new ServerAccess(this).execute(String.valueOf(droneObj), ipAddress);
         }
-    }*/
+    }
 
 
 
@@ -800,16 +755,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // get prompts.xml view
         LayoutInflater layoutInflater = LayoutInflater.from(this);
         View promptView = layoutInflater.inflate(R.layout.input_dialog, null);
-
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setView(promptView);
 
-//        Resources res = getResources();
         final EditText editText = (EditText) promptView.findViewById(R.id.edt_ipAddress);
-//        String server_get_url = String.format(res.getString(R.string.server_get_url),editText.getText());
-//        String server_post_url = String.format(res.getString(R.string.server_post_url),editText.getText());
-
-
         // setup a dialog window
         alertDialogBuilder.setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
