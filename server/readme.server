@@ -1,0 +1,27 @@
+sudo apt install python-pip
+
+pip install dronekit
+pip install dronekit-sitl
+pip install serial
+pip install pyserial
+pip install simplejson
+pip install requests
+
+install dronekit documentation
+
+git clone https://github.com/illinoistech-itm/amf.git
+
+dronekit-sitl copter --home=41.8348731,-87.62700589999997,584,353
+
+~/amf/server python3 server.py  // command under python3
+
+
+# under the same WIFI network
+#install visual studio code
+#make sure default is python2.7
+#change timeout file 120 value 
+#import
+#change address 10.0.0.7:8080 in server.py and string.xml 
+#check dmesg
+#if server can't open port for ttyUSB0, sudo chmod 777 /dev/ttyUSB0
+ (on linux)
