@@ -1,3 +1,4 @@
+[THINGS TO DO - follow README.md]
 sudo apt install python-pip
 
 pip install dronekit
@@ -11,17 +12,20 @@ install dronekit documentation
 
 git clone https://github.com/illinoistech-itm/amf.git
 
-dronekit-sitl copter --home=41.8348731,-87.62700589999997,584,353
 
+[OPEN THE SERVER]
 ~/amf/server python3 server.py  // command under python3
 
 
-# under the same WIFI network
+[MAKE SURE]
+#under the same WIFI network (app & server)
 #install visual studio code
-#make sure default is python2.7
-#change timeout file 120 value 
-#import
+#make python2.7 as a default version
+#change timeout value 30 to 120 in file 
 #change address 10.0.0.7:8080 in server.py and string.xml 
-#check dmesg
-#if server can't open port for ttyUSB0, sudo chmod 777 /dev/ttyUSB0
+
+
+ [ERROR]
+#if there's problem in connecting with radio, check dmesg log
+#if server can't open port for ttyUSB0, type 'sudo chmod 777 /dev/ttyUSB0'
  (on linux)
