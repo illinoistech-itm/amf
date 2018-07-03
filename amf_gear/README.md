@@ -8,7 +8,7 @@ This repository contains the Android Studio project, communication scripts and s
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. -->
 
-### Prerequisites
+## Prerequisites
 
 1. A drone that communicates using MAVLink protocol (most vehicles made by [3DRobotics](https://3drobotics.com/) and other members of the [DroneCode Foundation](https://www.dronecode.org/about/project-members))
 
