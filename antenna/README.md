@@ -12,8 +12,10 @@
 
 pip is then used to install dronekit and dronekit-sitl. Mac and Linux may require you to prefix these commands with sudo:
 
-```pip install dronekit```
-```pip install dronekit-sitl```
+```python
+pip install dronekit
+pip install dronekit-sitl
+```
 
 ## Description
 
