@@ -8,9 +8,9 @@
 
 ## Pre-reqs
 
-```sudo apt-get install python-pip python-dev```
-
 pip is then used to install dronekit and dronekit-sitl. Mac and Linux may require you to prefix these commands with sudo:
+
+```sudo apt-get install python-pip python-dev```
 
 ```python
 pip install dronekit
