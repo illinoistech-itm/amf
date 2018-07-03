@@ -14,7 +14,7 @@ This folder contains the Android Studio 3.1 Android Wear project for a Samsung G
 
 ## Antenna
 
-Was a Python project that was used to re-write radio ID firmware for cerating a 1 to many realtionship on a standard 915 mhz radio
+A Python project that was used to re-write radio ID firmware for cerating a 1 to many realtionship on a standard 915 mhz radio
 
 ## Server
 
