@@ -12,6 +12,17 @@ install dronekit documentation
 
 git clone https://github.com/illinoistech-itm/amf.git
 
+## Sample structure of JSON block
+
+```json
+{
+"instanceID":"9cd08b91-0960-4208-a1a7-9fa582e50e91",
+"requestID":"REQUEST_19-Jul-2016_10:31:56:3156",
+"latitude":41.83173105748931,
+"longitude":-87.6270828768611,
+"address":"3300 South Federal Street"
+}  
+```
 
 [OPEN THE SERVER]
 ~/amf/server python3 server.py  // command under python3
